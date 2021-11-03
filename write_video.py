@@ -19,7 +19,7 @@ for filename in tqdm(files):
 	size = (width,height)
 	img_array.append(img)
  
-out = cv2.VideoWriter('/Users/a./Desktop/ray/ray_traced.avi',cv2.VideoWriter_fourcc(*'mp4v'), 60, size)
+out = cv2.VideoWriter('/Users/a./Desktop/ray/ray_traced.avi',cv2.VideoWriter_fourcc(*'mp4v'), 30, size)
  
 for i in tqdm(range(len(img_array))):
 	out.write(img_array[i])

@@ -7,8 +7,9 @@ from RenderEngine import RenderEngine
 from Vector import Vector
 from Light import Light
 from Material import Material, ChequeredMaterial
-
-
+import os
+import time
+from multiprocessing import cpu_count, Pool
 # Render a 3d ball without shading
 
 # Ray tracing algorithm simplified and coded in the engine
@@ -95,53 +96,81 @@ Ground plane - Hint earth is a giant sphere
 # from tqdm import tqdm
 
 def main():
-	lower = 0
-	upper = 5
-	length = 200
+	lower = 0.0
+	upper = 4.0
+	length = 250
 	arr = [lower + x*(upper-lower)/length for x in range(length)]
+
+
+
+	lower_z = -10.6
+	upper_z = -1.0
+
+	arr_z = [lower_z + x*(upper_z-lower_z)/length for x in range(length)]
+
+	lower_y = -0.350
+	upper_y = +1.000
+	arr_y = [lower_y + x*(upper_y-lower_y)/length for x in range(length)]
+
 	three_sixty = arr
 	i  = 0
 	length=length*2
 	for val in three_sixty:
 		print(f"{int(i/length * 100)}%", end = "\r")
 		if i < 10:
-			create_image(val, f"/Users/a./Desktop/ray/animated/rotating_circle0{i}.ppm")
+			create_image((val, arr_y[i], -arr_z[i]), f"/Users/a./Desktop/ray/animated/rotating_circle0{i}")
 		else:
-			create_image(val, f"/Users/a./Desktop/ray/animated/rotating_circle{i}.ppm")
+			create_image((val, arr_y[i], -arr_z[i]), f"/Users/a./Desktop/ray/animated/rotating_circle{i}")
 		i+=1
 	list.reverse(three_sixty)
+	list.reverse(arr_y)
+	list.reverse(arr_z)
+	j = 0
+	k = 0
 	for val in three_sixty:
 		print(f"{int(i/length * 100)}%", end = "\r")
-		create_image(val, f"/Users/a./Desktop/ray/animated/rotating_circle{i}.ppm")
+		create_image((val, arr_y[j], -arr[k]), f"/Users/a./Desktop/ray/animated/rotating_circle{i}")
 		i+=1
+		j+=1
+		k+=1
 	print("", end="\r")
 	print("")
 
 
 
-def create_image(first_arg, img_name):
-	WIDTH = 852
-	HEIGHT = 480
 
-	camera = Vector(first_arg, (first_arg)/10.0, -1)
+def create_image(camera, img_name, compress=False):
+	WIDTH = 1280
+	HEIGHT = 720
+
+	x_cam, y_cam, z_cam = camera
+
+	camera = Vector(x_cam, y_cam, z_cam)
 	objects = [
-		Sphere(Point(0, 10000.5, 1), 10000.0, ChequeredMaterial(color1 = Color.from_hex("#FFFFFF"), color2 = Color.from_hex("#000000"), ambient=0.2, reflection=0.2)),
+		Sphere(Point(0, 10000.5, 1), 10000.0, ChequeredMaterial(color1 = Color.from_hex("#000000"), color2 = Color.from_hex("#FFFFFF"), ambient=0.2, reflection=0.2)),
 		Sphere(Point(0.75, -0.1, 1), 0.6, Material(Color.from_hex("#0000FF"))),
 		Sphere(Point(-0.75, -0.1, 2.25), 0.6, Material(Color.from_hex("#803980"))),
 		Sphere(Point(-2.75, -0.1, 2.25), 0.6, Material(Color.from_hex("#803980"))),
-		Sphere(Point(-4.75, -0.1, 2.25), 0.6, Material(Color.from_hex("#803980")))
+		Sphere(Point(-4.75, -0.1, 2.25), 0.6, Material(Color.from_hex("#803980"))),
+		Sphere(Point(0, -10001.5, -1), 10000.0, ChequeredMaterial(color1 = Color.from_hex("#FFFFFF"), color2 = Color.from_hex("#FFFFFF"), ambient=0.01, reflection=0.1))
+	]	
 
-	]
-	lights = [Light(Point(1.5, -0.5, -10), Color.from_hex("#FFFFFF")),
-	Light(Point(-0.5, -10.5, 0), Color.from_hex("#E6E6E6"))
+	lights = [
+	Light(Point(1.5, -0.5, -10), Color.from_hex("#FFFFFF")),
+	Light(Point(-0.5, -10.5, 0), Color.from_hex("#E6E6E6")),
 	]
 
 	scene = Scene(camera, objects, lights, WIDTH, HEIGHT)
 	engine = RenderEngine()
 	im = engine.render(scene)
 
-	with open(img_name, "w") as img_file:
+	with open(img_name+".ppm", "w") as img_file:
 		im.write_ppm(img_file)
+	
+	if compress:
+		os.chdir("/Users/a./Desktop/ray/animated/")
+		os.system(f"pnmtopng {img_name}.ppm > {img_name}.png")
+		os.system(f"rm {img_name}.ppm")  
 
 
 if __name__ == "__main__":
