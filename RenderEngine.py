@@ -8,7 +8,7 @@ class RenderEngine:
 	MAX = 5
 	MIN_DISPLACE = 0.0001
 
-	def render(self, scene):
+	def render(self, scene, img_name, sema=None):
 		width = scene.width
 		height = scene.height
 		aspect = float(width)/height
@@ -32,7 +32,10 @@ class RenderEngine:
 				ray = Ray(camera, Point(x,y)-camera)
 				pixels.set_pixel(i, j, self.ray_trace(ray, scene))
 		
-		return pixels
+		pixels.write_ppm(img_name)
+		if sema is not None:
+			sema.release()
+		return 
 
 	def ray_trace(self, ray, scene, depth=0):
 		color = Color(0, 0, 0)
@@ -71,7 +74,7 @@ class RenderEngine:
 		obj_color = material.color_at(hit_pos)
 		to_cam = scene.camera - hit_pos
 		specular_k = 50
-		color = material.ambient * Color.from_hex("#000000")
+		color = material.ambient * Color.from_hex("#FFFFFF")
 		for light in scene.lights:
 			to_light = Ray(hit_pos, light.position - hit_pos)
 			color += obj_color * material.diffuse * max(hit_normal.dot_prod(to_light.direction), 0)

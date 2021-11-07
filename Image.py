@@ -1,3 +1,5 @@
+import numpy as np
+from PIL import Image as im
 class Image:
 	def __init__(self, width, height):
 		self.width = width
@@ -14,12 +16,17 @@ class Image:
 			if c*255 < 0:   return round(0)
 			return round(c*255)
 
-		img.write(f"P3 {self.width} {self.height} \n255\n")
+		array = []
 		for i in range(0, len(self.pixels)):
 			for j in range(0, len(self.pixels[0])):
 				color = self.pixels[i][j]
-				img.write(f"{to_byte(color.x)} {to_byte(color.y)} {to_byte(color.z)} ")
-			img.write("\n")
+				array.append(to_byte(color.x))
+				array.append(to_byte(color.y))
+				array.append(to_byte(color.z))
+
+		array = np.array(array, dtype=np.uint8).reshape((int(self.height),int(self.width),3))
+		im.fromarray(array, 'RGB').save(img)
+		# imgs.close()
 
 
 
