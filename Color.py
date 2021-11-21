@@ -8,3 +8,6 @@ class Color(Vector):
 		z = int(hexcolor[5:7], 16)/255.0
 		return cls(x, y, z)
 
+if __name__ == "__main__":
+	col = Color()
+	print(col.from_hex("#FF5733"))
