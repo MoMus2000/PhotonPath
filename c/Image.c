@@ -1,15 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include "test.h"
 
-#define WIDTH 200
-#define HEIGHT 400
+
+#define WIDTH 2
+#define HEIGHT 4
 
 struct Image{
-	int (*pixels)[HEIGHT];
+	struct Vector pixels[WIDTH][HEIGHT];
 };
 
-void set_pixel(struct Image *image, int i, int j, int color){
+void set_pixel(struct Image *image, int i, int j, struct Vector color){
 	image->pixels[i][j] = color;
 }
 
@@ -41,16 +43,15 @@ void write_ppm(struct Image *image){
 		exit(1);
 	}
 
-	printf("HELLO");
-
 	fprintf(ptr,"P3 %d %d \n255\n", width, height);
 
 	for(int i=0;i<width;i++){
 		for(int j=0;j<height;j++){
-			// int color = image->pixels[i][j];
-			int color = float_rand(0.001, 0.009);
-			int x = to_byte(color);
-			fprintf(ptr,"%d", x);
+			struct Vector color = image->pixels[i][j];
+			int x = to_byte(color.x);
+			int y = to_byte(color.y);
+			int z = to_byte(color.z);
+			fprintf(ptr,"%d %d %d ", x, y , z);
 		}
 		fprintf(ptr,"\n");
 	}
@@ -58,9 +59,18 @@ void write_ppm(struct Image *image){
 }
 
 int main(int argc, char const *argv[]){
-	int pixels[WIDTH][HEIGHT] = {{1, 2, 3, 4}, {5, 6, 7, 8}};
+	// int pixels[WIDTH][HEIGHT] = {{1, 2, 3, 4}, {5, 6, 7, 8}};
+	struct Vector v1 = {2,2,2};
+	struct Vector v2 = {2,3,4};
+	struct Vector arr[WIDTH][HEIGHT] = {v1, v2}; 
+	struct Vector pixels[WIDTH][HEIGHT] = {v1, v2};
 	struct Image *img = malloc(sizeof(struct Image));
-	img->pixels = pixels;
+	for(int i=0;i<WIDTH; i++){
+		for(int j=0;j<HEIGHT; j++){
+			img->pixels[i][j] = pixels[i][j];
+		}
+	}
+	// img->pixels[0][0] = pixels[0][0];
 	write_ppm(img);
 	// struct Image = {co, 5, pixels}
 }
