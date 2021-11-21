@@ -3,8 +3,8 @@
 #include <math.h>
 
 
-#define WIDTH 5
-#define HEIGHT 10
+#define WIDTH 3
+#define HEIGHT 3
 
 struct Image{
 	struct Vector pixels[WIDTH][HEIGHT];
@@ -27,7 +27,7 @@ int to_byte(float c){
 	else if (c*255 < 0){
 		return round(0);
 	}
-	return round(c);
+	return round(c*255);
 }
 
 void write_ppm(struct Image *image){

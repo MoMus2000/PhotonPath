@@ -34,6 +34,14 @@ struct Vector *mul(struct Vector v1, struct Vector v2){
 	return temp;
 }
 
+struct Vector *static_mul(struct Vector v1, float constant){
+	struct Vector *temp = malloc(sizeof *temp);
+	temp->x = v1.x * constant;
+	temp->y = v1.y * constant;
+	temp->z = v1.z * constant;
+	return temp;
+}
+
 float magnitude(struct Vector v1){
 	float mag = sqrt((v1.x * v1.x) + (v1.y * v1.y) + (v1.z * v1.z));
 	// printf("%f \n", mag);
