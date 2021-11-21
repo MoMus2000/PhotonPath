@@ -78,14 +78,14 @@ int main(int argc, char const *argv[])
 	// printf("%p , %p, %p \n", &v4->x, &v4->y, &v4->z);
 	// printf("%d , %d, %d \n", v4->x, v4->y, v4->z);
 
-	magnitude(v1);
-	magnitude(v2);
+	// magnitude(v1);
+	// magnitude(v2);
 
-	print(&v1);
-	print(&v2);
+	// print(&v1);
+	// print(&v2);
 
-	print(normalize(v1));
-	print(normalize(v2));
+	// print(normalize(v1));
+	// print(normalize(v2));
 
 	// printf("%p %p %p",&add(v1, v2),&add(v1, v2),&add(v1, v2));
 	return 0;
