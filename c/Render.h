@@ -1,5 +1,5 @@
 struct find_near{
-	struct Sphere obj;
+	struct Sphere *obj;
 	int dist;
 };
 
@@ -19,7 +19,7 @@ struct find_near find_nearest(struct Ray *ray, struct Scene *scene){
 			}
 		}
 	}
-	struct find_near fn2 = {*obj_hit, dist_min};
+	struct find_near fn2 = {obj_hit, dist_min};
 	return fn2;
 }
 
@@ -27,7 +27,7 @@ struct Vector ray_trace(struct Ray *ray, struct Scene scene){
 	struct Vector color = {0, 0, 0};
 	struct find_near fn = find_nearest(ray, &scene);
 	float dist = fn.dist;
-	struct Sphere *obj = &fn.obj;
+	struct Sphere *obj = fn.obj;
 
 	if(obj == NULL){
 		return color;
@@ -52,7 +52,7 @@ struct Image *render(struct Scene scene){
 
 	float y_step = (y1 - y0)/(height -1);
 
-	struct Vector cam = scene.camera;
+	struct Vector cam = *scene.camera;
 	struct Image *img = malloc(sizeof(struct Image));
 
 	for(int j= 0; j< height; j++){

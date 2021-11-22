@@ -35,14 +35,14 @@ int main(int argc, char const *argv[])
 
 	write_ppm(img);
 
-	struct Vector camera = {1, 0, -10};
+	struct Vector camera = {0, 0, -1};
 	struct Vector center = {0, 0, 0};
 	struct Vector *col = from_hex("#FF0000");
 
 	struct Sphere sp = {&center, 1, col};
 	struct Sphere *objects = {&sp};
 
-	struct Scene scene = {camera, objects, WIDTH, HEIGHT};
+	struct Scene scene = {&camera, objects, WIDTH, HEIGHT};
 
 	struct Image *im = render(scene); 
 

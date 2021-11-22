@@ -1,5 +1,5 @@
-#define WIDTH 480
-#define HEIGHT 220
+#define WIDTH 320
+#define HEIGHT 200
 
 struct Image{
 	struct Vector pixels[WIDTH][HEIGHT];
