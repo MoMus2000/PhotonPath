@@ -1,8 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
-
 struct Vector
 {
 	float x;
@@ -82,6 +77,10 @@ struct Vector *from_hex(char * hex_color){
 	temp->z = z1;
 
 	return temp;
+}
+
+int dot_prod(struct Vector v1, struct Vector v2){
+	return v1.x * v2.x + v1.y*v2.y + v1.z*v2.z;
 }
 
 // int main(int argc, char const *argv[])

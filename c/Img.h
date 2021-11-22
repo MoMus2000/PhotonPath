@@ -1,10 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-
-
-#define WIDTH 3
-#define HEIGHT 3
+#define WIDTH 480
+#define HEIGHT 220
 
 struct Image{
 	struct Vector pixels[WIDTH][HEIGHT];
@@ -50,6 +45,7 @@ void write_ppm(struct Image *image){
 			int x = to_byte(color.x);
 			int y = to_byte(color.y);
 			int z = to_byte(color.z);
+
 			fprintf(ptr,"%d %d %d ", x, y , z);
 		}
 		fprintf(ptr,"\n");
