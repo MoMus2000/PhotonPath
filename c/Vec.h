@@ -39,7 +39,6 @@ struct Vector *static_mul(struct Vector v1, float constant){
 
 float magnitude(struct Vector v1){
 	float mag = sqrt((v1.x * v1.x) + (v1.y * v1.y) + (v1.z * v1.z));
-	// printf("%f \n", mag);
 	return mag;
 }
 

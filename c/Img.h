@@ -1,5 +1,6 @@
-#define WIDTH 320
-#define HEIGHT 200
+#include <png.h>
+#define WIDTH 720
+#define HEIGHT 480
 
 struct Image{
 	struct Vector pixels[HEIGHT][WIDTH];
@@ -20,13 +21,16 @@ int to_byte(float c){
 	return round(c*255);
 }
 
-void write_ppm(struct Image *image){
+void write_ppm(struct Image *image, char * file_name){
 	int width = WIDTH;
 	int height = HEIGHT;
 
 	FILE *ptr;
 
-	ptr = fopen("/Users/a./Desktop/ray/ray-tracer/c/test.ppm", "w");
+	char path[100] = "/Users/a./Desktop/ray/ray-tracer/c/";
+	strcat(path, file_name);
+
+	ptr = fopen(path, "w");
 
 	if(ptr == NULL){
 		exit(1);

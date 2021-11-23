@@ -19,10 +19,8 @@ struct find_near find_nearest(struct Ray *ray, struct Scene *scene){
 			}
 		}
 	}
-	struct find_near *fn2 = malloc(sizeof (struct find_near));
-	fn2->obj = obj_hit;
-	fn2->dist = dist_min;
-	return *fn2;
+	struct find_near fn2 = {obj_hit, dist_min};
+	return fn2;
 }
 
 struct Vector ray_trace(struct Ray *ray, struct Scene scene){
@@ -34,12 +32,13 @@ struct Vector ray_trace(struct Ray *ray, struct Scene scene){
 	if(obj == NULL){
 		return color;
 	}
-
-	struct Vector *hit_pos = static_mul(*add(*ray->origin, *ray->direction), dist);
+	struct Vector *add_two = add(*ray->origin, *ray->direction);
+	struct Vector *hit_pos = static_mul(*add_two, dist);
 
 	color = *add(color, *color_at(*obj));
 
-	// print(&color);
+	free(hit_pos);
+	free(add_two);
 
 	return color;
 }
@@ -67,8 +66,12 @@ struct Image *render(struct Scene scene){
 			struct Ray *ray = malloc(sizeof(struct Image));
 			struct Vector point = {x,y,0.0};
 			ray->origin = &cam;
-			ray->direction = normalize(*sub(point, cam));
+			struct Vector *subtract = sub(point,cam);
+			ray->direction = normalize(*subtract);
 			set_pixel(img, i,j, ray_trace(ray, scene));
+			free(ray->direction);
+			free(ray);
+			free(subtract);
 		}
 	}
 

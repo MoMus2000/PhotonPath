@@ -35,18 +35,32 @@ int main(int argc, char const *argv[])
 
 	// write_ppm(img);
 
-	struct Vector camera = {0, 0, -1};
-	struct Vector center = {0, 0, 0};
-	struct Vector *col = from_hex("#FF0000");
+	int n = 10;
+	char s1[10] = "##########";
+	char s2[10] = "          ";
 
-	struct Sphere sp = {&center, 0.5, col};
-	struct Sphere *objects = {&sp};
+	for(int i =0; i<10;i++){
+		fprintf(stderr, "Progress: |%.*s%.*s| %02d\r", i, s1, n-i, s2, i);
+		struct Vector camera = {0, 0, -1};
+		struct Vector center = {0, 0, 0};
+		struct Vector *col = from_hex("#FF0000");
 
-	struct Scene scene = {&camera, objects, WIDTH, HEIGHT};
+		struct Sphere sp = {&center, 0.5, col};
+		struct Sphere *objects = {&sp};
 
-	struct Image *im = render(scene); 
+		struct Scene scene = {&camera, objects, WIDTH, HEIGHT};
 
-	write_ppm(im);
+		struct Image *im = render(scene); 
 
+		write_ppm(im, "ok123.ppm");
+
+		free(im);
+		free(col);
+		fflush(stderr);
+
+	}
+
+
+	
 	return 0;
 }

@@ -6,10 +6,10 @@ struct Sphere{
 
 
 float intersects(struct Sphere *sphere, struct Ray *ray){
-	struct Vector sphere_to_ray = *sub(*ray->origin, *sphere->center);
+	struct Vector *sphere_to_ray = sub(*ray->origin, *sphere->center);
 	float a = 1;
-	float b = 2 * dot_prod(*ray->direction, sphere_to_ray);
-	float c = dot_prod(sphere_to_ray, sphere_to_ray) - (sphere->radius*sphere->radius);
+	float b = 2 * dot_prod(*ray->direction, *sphere_to_ray);
+	float c = dot_prod(*sphere_to_ray, *sphere_to_ray) - (sphere->radius*sphere->radius);
 	float discriminant = b*b -4*a*c;
 	if(discriminant >= 0){
 		float dist = (-b - sqrt(discriminant))/2.0;
@@ -17,5 +17,6 @@ float intersects(struct Sphere *sphere, struct Ray *ray){
 			return dist;
 		}
 	}
+	free(sphere_to_ray);
 	return 0;
 }
