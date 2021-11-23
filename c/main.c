@@ -39,7 +39,7 @@ int main(int argc, char const *argv[])
 	struct Vector center = {0, 0, 0};
 	struct Vector *col = from_hex("#FF0000");
 
-	struct Sphere sp = {&center, 1, col};
+	struct Sphere sp = {&center, 0.5, col};
 	struct Sphere *objects = {&sp};
 
 	struct Scene scene = {&camera, objects, WIDTH, HEIGHT};
@@ -48,6 +48,5 @@ int main(int argc, char const *argv[])
 
 	write_ppm(im);
 
-	// struct render rend;
 	return 0;
 }

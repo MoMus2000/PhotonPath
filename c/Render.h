@@ -1,6 +1,6 @@
 struct find_near{
 	struct Sphere *obj;
-	int dist;
+	float dist;
 };
 
 struct Vector *color_at(struct Sphere obj){
@@ -19,8 +19,10 @@ struct find_near find_nearest(struct Ray *ray, struct Scene *scene){
 			}
 		}
 	}
-	struct find_near fn2 = {obj_hit, dist_min};
-	return fn2;
+	struct find_near *fn2 = malloc(sizeof (struct find_near));
+	fn2->obj = obj_hit;
+	fn2->dist = dist_min;
+	return *fn2;
 }
 
 struct Vector ray_trace(struct Ray *ray, struct Scene scene){
@@ -36,11 +38,13 @@ struct Vector ray_trace(struct Ray *ray, struct Scene scene){
 
 	color = *add(color, *color_at(*obj));
 
+	// print(&color);
+
 	return color;
 }
 
 struct Image *render(struct Scene scene){
-	int width = scene.width;
+	float width = scene.width;
 	float height = scene.height;
 	float aspect = width/height;
 
@@ -62,7 +66,7 @@ struct Image *render(struct Scene scene){
 			struct Ray *ray = malloc(sizeof(struct Image));
 			struct Vector point = {x,y,0};
 			ray->origin = &cam;
-			ray->direction = sub(point, cam);
+			ray->direction = normalize(*sub(point, cam));
 			set_pixel(img, i,j, ray_trace(ray, scene));
 		}
 	}

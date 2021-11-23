@@ -79,47 +79,6 @@ struct Vector *from_hex(char * hex_color){
 	return temp;
 }
 
-int dot_prod(struct Vector v1, struct Vector v2){
+float dot_prod(struct Vector v1, struct Vector v2){
 	return v1.x * v2.x + v1.y*v2.y + v1.z*v2.z;
 }
-
-// int main(int argc, char const *argv[])
-// {
-// 	struct Vector v1 = {2,2,2};
-// 	struct Vector v2 = {2,3,4};
-
-// 	// struct Vector *v3 = add(v1, v2);
-// 	// printf("%p , %p, %p \n", &v3->x, &v3->y, &v3->z);
-// 	// printf("%d , %d, %d \n", v3->x, v3->y, v3->z);
-// 	// struct Vector *v4 = add(v1, v2);
-// 	// printf("%p , %p, %p \n", &v4->x, &v4->y, &v4->z);
-// 	// printf("%d , %d, %d \n", v4->x, v4->y, v4->z);
-
-// 	// struct Vector *v3 = sub(v1, v2);
-// 	// printf("%p , %p, %p \n", &v3->x, &v3->y, &v3->z);
-// 	// printf("%d , %d, %d \n", v3->x, v3->y, v3->z);
-// 	// struct Vector *v4 = sub(v1, v2);
-// 	// printf("%p , %p, %p \n", &v4->x, &v4->y, &v4->z);
-// 	// printf("%d , %d, %d \n", v4->x, v4->y, v4->z);
-
-// 	// struct Vector *v3 = mul(v1, v2);
-// 	// printf("%p , %p, %p \n", &v3->x, &v3->y, &v3->z);
-// 	// printf("%d , %d, %d \n", v3->x, v3->y, v3->z);
-// 	// struct Vector *v4 = mul(v1, v2);
-// 	// printf("%p , %p, %p \n", &v4->x, &v4->y, &v4->z);
-// 	// printf("%d , %d, %d \n", v4->x, v4->y, v4->z);
-
-// 	// magnitude(v1);
-// 	// magnitude(v2);
-
-// 	// print(&v1);
-// 	// print(&v2);
-
-// 	// print(normalize(v1));
-// 	// print(normalize(v2));
-
-// 	// printf("%p %p %p",&add(v1, v2),&add(v1, v2),&add(v1, v2));
-
-// 	print(from_hex("#FF5733"));
-// 	return 0;
-// }
