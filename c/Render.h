@@ -34,6 +34,7 @@ struct Vector ray_trace(struct Ray *ray, struct Scene scene){
 	if(obj == NULL){
 		return color;
 	}
+
 	struct Vector *hit_pos = static_mul(*add(*ray->origin, *ray->direction), dist);
 
 	color = *add(color, *color_at(*obj));
@@ -59,12 +60,12 @@ struct Image *render(struct Scene scene){
 	struct Vector cam = *scene.camera;
 	struct Image *img = malloc(sizeof(struct Image));
 
-	for(int j= 0; j< height; j++){
+	for(int j= 0; j< HEIGHT; j++){
 		float y = y0 + j*y_step;
-		for(int i=0; i< width; i++){
+		for(int i=0; i< WIDTH; i++){
 			float x = x0 + i*x_step;
 			struct Ray *ray = malloc(sizeof(struct Image));
-			struct Vector point = {x,y,0};
+			struct Vector point = {x,y,0.0};
 			ray->origin = &cam;
 			ray->direction = normalize(*sub(point, cam));
 			set_pixel(img, i,j, ray_trace(ray, scene));
