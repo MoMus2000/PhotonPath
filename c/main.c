@@ -10,6 +10,8 @@
 #include "Sphere.h"
 #include "Scene.h"
 #include "Render.h"
+#include "Light.h"
+#include "Material.h"
 
 
 int main(int argc, char const *argv[])
