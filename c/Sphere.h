@@ -20,3 +20,8 @@ float intersects(struct Sphere *sphere, struct Ray *ray){
 	free(sphere_to_ray);
 	return 0;
 }
+
+struct Vector normal(struct Vector surface_point, struct Sphere sp){
+	struct Vector neg = *sub(surface_point, *sp.center);
+	return *normalize(neg);
+}

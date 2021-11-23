@@ -35,12 +35,12 @@ int main(int argc, char const *argv[])
 
 	// write_ppm(img);
 
-	int n = 10;
-	char s1[10] = "##########";
-	char s2[10] = "          ";
+	int n = 200;
+	char s1[100] = "";
+	char s2[100] = "";
 
-	for(int i =0; i<10;i++){
-		fprintf(stderr, "Progress: |%.*s%.*s| %02d\r", i, s1, n-i, s2, i);
+	for(int i =0; i<200;i++){
+		fprintf(stderr, "Progress: %.*s%.*s %02f\r", i, s1, n-i, s2, i/(float)n);
 		struct Vector camera = {0, 0, -1};
 		struct Vector center = {0, 0, 0};
 		struct Vector *col = from_hex("#FF0000");
@@ -57,10 +57,7 @@ int main(int argc, char const *argv[])
 		free(im);
 		free(col);
 		fflush(stderr);
-
 	}
-
-
-	
+	fflush(stderr);
 	return 0;
 }

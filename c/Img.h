@@ -1,6 +1,6 @@
 #include <png.h>
-#define WIDTH 720
-#define HEIGHT 480
+#define WIDTH 320
+#define HEIGHT 200
 
 struct Image{
 	struct Vector pixels[HEIGHT][WIDTH];
