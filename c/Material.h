@@ -1,13 +1,13 @@
 struct Material{
-	struct Vector color;
-	struct Vector ambient;
-	struct Vector diffuse;
-	struct Vector specular;
+	struct Vector *color;
+	float ambient;
+	float diffuse;
+	float specular;
 };
 
 struct Vector material_color_at(struct Material mt){
-	return mt.color;
-}
+	return *mt.color;
+};
 
 struct Checkered_Material{
 	struct Vector color1;
@@ -15,8 +15,8 @@ struct Checkered_Material{
 	struct Vector ambient;
 	struct Vector diffuse;
 	struct Vector specular;
-}
+};
 
 struct Vector checkered_material_color_at(struct Checkered_Material mt){
-	return mt.color;
-}
+	return mt.color1;
+};

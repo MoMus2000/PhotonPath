@@ -1,7 +1,7 @@
 struct Sphere{
 	struct Vector *center;
 	float radius;
-	struct Vector *material;
+	struct Material *material;
 };
 
 

@@ -8,10 +8,10 @@
 #include "Img.h"
 #include "Ray.h"
 #include "Sphere.h"
-#include "Scene.h"
-#include "Render.h"
 #include "Light.h"
 #include "Material.h"
+#include "Scene.h"
+#include "Render.h"
 
 
 int main(int argc, char const *argv[])
@@ -41,16 +41,25 @@ int main(int argc, char const *argv[])
 	char s1[100] = "";
 	char s2[100] = "";
 
-	for(int i =0; i<200;i++){
+	for(int i =0; i<1;i++){
 		fprintf(stderr, "Progress: %.*s%.*s %02f\r", i, s1, n-i, s2, i/(float)n);
 		struct Vector camera = {0, 0, -1};
 		struct Vector center = {0, 0, 0};
 		struct Vector *col = from_hex("#FF0000");
 
-		struct Sphere sp = {&center, 0.5, col};
+		struct Material mt = {col, 0.05, 1.0, 1.0};
+
+		struct Sphere sp = {&center, 0.5, &mt};
 		struct Sphere *objects = {&sp};
 
-		struct Scene scene = {&camera, objects, WIDTH, HEIGHT};
+		struct Vector light_vec = {1.5, -0.5, -10.0};
+		struct Light light_1 = {light_vec, from_hex("#FFFFFF")};
+
+		struct Light *lights = {&light_1};
+
+		struct Scene scene = {&camera, objects, lights, WIDTH, HEIGHT};
+
+		
 
 		struct Image *im = render(scene); 
 
