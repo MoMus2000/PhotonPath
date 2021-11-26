@@ -1,3 +1,6 @@
+#define MAX 50
+#define MIN_DISPLACE 0.0001
+
 struct find_near{
 	struct Sphere *obj;
 	float dist;
@@ -28,8 +31,6 @@ struct Vector *color_at(struct Sphere obj, struct Vector *hit_pos, struct Vector
 			temp2 = 0;
 		}
 		color = add(*color, *static_mul(temp1, temp2));
-
-		print(color);
 	}
 
 	return color;
@@ -51,7 +52,7 @@ struct find_near find_nearest(struct Ray *ray, struct Scene *scene){
 	return fn2;
 }
 
-struct Vector ray_trace(struct Ray *ray, struct Scene scene){
+struct Vector ray_trace(struct Ray *ray, struct Scene scene, int depth){
 	struct Vector color = {0, 0, 0};
 	struct find_near fn = find_nearest(ray, &scene);
 	float dist = fn.dist;
@@ -65,6 +66,17 @@ struct Vector ray_trace(struct Ray *ray, struct Scene scene){
 
 	struct Vector *hit_normal = normalize(*hit_pos);
 	color = *add(color, *color_at(*obj, hit_pos, hit_normal, scene));
+
+	if(depth < MAX){
+		// new_ray_position = hit_pos + hit_normal * self.MIN_DISPLACE
+		// new_ray_dir = (ray.direction -2 * ray.direction.dot_prod(hit_normal) * hit_normal)
+		struct Vector new_ray_position = *add(*hit_pos, *static_mul(*hit_normal, MIN_DISPLACE));
+		struct Vector new_ray_dir = *add(*ray->direction, *static_mul(*static_mul(*hit_normal, dot_prod(*ray->direction, *hit_normal)), -2));
+		// struct Vector new_ray_dir = *add(*ray->direction,*static_mul(mul(dot_prod(*ray->direction, *hit_normal), *hit_normal), -2));
+		// new_ray = Ray(new_ray_position, new_ray_dir)
+		struct Ray new_ray = {&new_ray_position, &new_ray_dir};
+		color = *add(color, *static_mul(ray_trace(&new_ray,  scene, depth+1), obj->material->reflection));
+	}
 
 	free(hit_pos);
 	free(add_two);
@@ -97,7 +109,7 @@ struct Image *render(struct Scene scene){
 			ray->origin = &cam;
 			struct Vector *subtract = sub(point,cam);
 			ray->direction = normalize(*subtract);
-			set_pixel(img, i,j, ray_trace(ray, scene));
+			set_pixel(img, i,j, ray_trace(ray, scene, 0));
 			free(ray->direction);
 			free(ray);
 			free(subtract);

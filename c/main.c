@@ -37,7 +37,7 @@ int main(int argc, char const *argv[])
 
 	// write_ppm(img);
 
-	int n = 200;
+	int n = 1;
 	char s1[100] = "";
 	char s2[100] = "";
 
@@ -47,7 +47,7 @@ int main(int argc, char const *argv[])
 		struct Vector center = {0, 0, 0};
 		struct Vector *col = from_hex("#FF0000");
 
-		struct Material mt = {col, 0.05, 1.0, 1.0};
+		struct Material mt = {col, 0.05, 1.0, 1.0, 0.05};
 
 		struct Sphere sp = {&center, 0.5, &mt};
 		struct Sphere *objects = {&sp};

@@ -3,6 +3,7 @@ struct Material{
 	float ambient;
 	float diffuse;
 	float specular;
+	float reflection;
 };
 
 struct Vector material_color_at(struct Material mt){
