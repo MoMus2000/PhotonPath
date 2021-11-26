@@ -13,8 +13,8 @@ struct Vector *color_at(struct Sphere obj, struct Vector *hit_pos, struct Vector
 	color->x = vec.x;
 	color->y = vec.y;
 	color->z = vec.z;
-	for(int i=0;i<3;i++){
-		struct Ray lgt = {hit_pos, sub(scene.light[i].position, *hit_pos)};
+	for(int i=0;i<1;i++){
+		struct Ray lgt = {hit_pos, normalize(*sub(scene.light[i].position, *hit_pos))};
 		struct Vector v = *static_mul(obj_color, mt->diffuse);
 		float w = dot_prod(*hit_normal, *lgt.direction);
 		if(w <= 0){
@@ -23,12 +23,13 @@ struct Vector *color_at(struct Sphere obj, struct Vector *hit_pos, struct Vector
 		color = add(*color, *static_mul(v, w));
 		struct Vector half_vector = *normalize(*add(*lgt.direction, to_cam));
 		struct Vector temp1 = *static_mul(*scene.light[i].color, mt->specular);
-		float temp2 = dot_prod(*hit_normal, half_vector);
+		float temp2 = pow(dot_prod(*hit_normal, half_vector), specular_k);
 		if(temp2 <= 0){
 			temp2 = 0;
 		}
 		color = add(*color, *static_mul(temp1, temp2));
-		color = static_mul(*color, specular_k * specular_k);
+
+		print(color);
 	}
 
 	return color;
@@ -59,8 +60,8 @@ struct Vector ray_trace(struct Ray *ray, struct Scene scene){
 	if(obj == NULL){
 		return color;
 	}
-	struct Vector *add_two = add(*ray->origin, *ray->direction);
-	struct Vector *hit_pos = static_mul(*add_two, dist);
+	struct Vector *add_two = static_mul(*ray->direction, dist);
+	struct Vector *hit_pos = add(*add_two, *ray->origin);
 
 	struct Vector *hit_normal = normalize(*hit_pos);
 	color = *add(color, *color_at(*obj, hit_pos, hit_normal, scene));
