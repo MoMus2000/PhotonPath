@@ -78,6 +78,6 @@ struct Vector *from_hex(char * hex_color){
 	return temp;
 }
 
-float dot_prod(struct Vector v1, struct Vector v2){
-	return v1.x * v2.x + v1.y*v2.y + v1.z*v2.z;
+double dot_prod(struct Vector v1, struct Vector v2){
+	return (double) v1.x * v2.x + v1.y*v2.y + v1.z*v2.z;
 }

@@ -1,3 +1,6 @@
+#define NUM_SPHERES 4
+#define NUM_LIGHTS 2
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -12,10 +15,6 @@
 #include "Material.h"
 #include "Scene.h"
 #include "Render.h"
-
-#define NUM_SPHERES 2
-#define NUM_LIGHTS 2
-
 
 int main(int argc, char const *argv[])
 {
@@ -40,17 +39,23 @@ int main(int argc, char const *argv[])
 		struct Sphere sp_1 = {&center_1, 0.6, &mt_1};
 		
 		// surface
-		struct Vector suface = {0, 10000.5, 1};
+		struct Vector suface = {0.0, 10000.5, 1.0};
 		struct Vector *surface_color = from_hex("#e6b87d");
 		struct Material sp_mt = {surface_color, 0.05, 1.0, 1.0, 0.05};
 		struct Sphere surface_sp = {&suface, 10000.0, &sp_mt};
 
+		// surface
+		struct Vector suface_1 = {0.0, 10000.5, 1.0};
+		struct Vector *surface_color_1 = from_hex("#e6b87d");
+		struct Material sp_mt_1 = {surface_color_1, 0.05, 1.0, 1.0, 0.05};
+		struct Sphere surface_sp_1 = {&suface_1, 10000.0, &sp_mt_1};
+
 		struct Sphere *objects[NUM_SPHERES] = {
-			&sp, &sp_1
+			&surface_sp_1, &surface_sp, &sp, &sp_1
 		};
 
 		struct Vector light_vec = {1.5, -0.5, -10.0};
-		struct Light light_1 = {light_vec, from_hex("#E6E6E6")};
+		struct Light light_1 = {light_vec, from_hex("#FFFFFF")};
 
 		struct Vector light_vec_2 = {-0.5, -10.5, 0};
 		struct Light light_2 = {light_vec_2, from_hex("#E6E6E6")};
@@ -60,7 +65,7 @@ int main(int argc, char const *argv[])
 		struct Scene scene = {&camera, *objects, *lights, WIDTH, HEIGHT};
 
 		// Copy all values in the scene array;
-		for(int j=0; j<NUM_SPHERES;j++){
+		for(int j=1; j<NUM_SPHERES;j++){
 			scene.objects[j].center = objects[j]->center;
 			scene.objects[j].radius = objects[j]->radius;
 			scene.objects[j].material = objects[j]->material;
@@ -70,7 +75,21 @@ int main(int argc, char const *argv[])
 			scene.light[j].position = lights[j]->position;
 			scene.light[j].color = lights[j]->color;
 		}
-		
+
+		printf("CAMERA\n");
+		print(scene.camera);
+
+		printf("SPHERES:\n");
+		for(int i=1; i<NUM_SPHERES; i++){
+			print(scene.objects[i].center);
+			printf("radius %f\n",scene.objects[i].radius);
+		}
+
+		printf("LIGHTS:\n");
+		for(int i=0; i<NUM_LIGHTS; i++){
+			print(&scene.light[i].position);
+		}
+
 		struct Image *im = render(scene); 
 
 		write_ppm(im, "moodle.ppm");
@@ -82,28 +101,3 @@ int main(int argc, char const *argv[])
 	fflush(stderr);
 	return 0;
 }
-
-
-
-
-
-// struct Vector red = {1,0,0};
-	// struct Vector blue = {0,1,0};
-	// struct Vector green = {0,0,1};
-	// struct Image *img = malloc(sizeof(struct Image));
-	
-	// set_pixel(img, 0, 0, red);
-	// set_pixel(img, 1, 0, blue);
-	// set_pixel(img, 2, 0, green);
-
-	// set_pixel(img, 0, 1, *add(red, green));
-	// set_pixel(img, 1, 1, *add(red, blue));
-	// set_pixel(img, 2, 1, *add(blue, green));
-
-	// set_pixel(img, 0, 2, *static_mul(red, 0.01));
-	// set_pixel(img, 1, 2, *static_mul(blue, 2));
-	// set_pixel(img, 2, 2, *add(blue, *add(red, green)));
-
-	// struct Ray ray = {&red, normalize(red)};
-
-	// write_ppm(img);

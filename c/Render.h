@@ -16,7 +16,7 @@ struct Vector *color_at(struct Sphere obj, struct Vector *hit_pos, struct Vector
 	color->x = vec.x;
 	color->y = vec.y;
 	color->z = vec.z;
-	for(int i=0;i<2;i++){
+	for(int i=0;i<NUM_LIGHTS;i++){
 		struct Ray lgt = {hit_pos, normalize(*sub(scene.light[i].position, *hit_pos))};
 		struct Vector v = *static_mul(obj_color, mt->diffuse);
 		float w = dot_prod(*hit_normal, *lgt.direction);
@@ -39,7 +39,7 @@ struct Vector *color_at(struct Sphere obj, struct Vector *hit_pos, struct Vector
 struct find_near find_nearest(struct Ray *ray, struct Scene *scene){
 	float dist_min = INFINITY;
 	struct Sphere *obj_hit = NULL;
-	for(int i=0; i<3;i++){
+	for(int i=1; i<NUM_SPHERES;i++){
 		float dist = intersects(&scene->objects[i], ray);
 		if(dist != 0){
 			if(obj_hit != NULL || dist < dist_min){
@@ -61,6 +61,7 @@ struct Vector ray_trace(struct Ray *ray, struct Scene scene, int depth){
 	if(obj == NULL){
 		return color;
 	}
+
 	struct Vector *add_two = static_mul(*ray->direction, dist);
 	struct Vector *hit_pos = add(*add_two, *ray->origin);
 

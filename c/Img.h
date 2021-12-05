@@ -1,6 +1,6 @@
 #include <png.h>
-#define WIDTH 320
-#define HEIGHT 200
+#define WIDTH 360
+#define HEIGHT 180
 
 struct Image{
 	struct Vector pixels[HEIGHT][WIDTH];
@@ -50,15 +50,4 @@ void write_ppm(struct Image *image, char * file_name){
 		fprintf(ptr,"\n");
 	}
 	fclose(ptr);
-
-	// for(int i=0;i<width;i++){
-	// 	for(int j=0;j<height;j++){
-	// 		struct Vector color = image->pixels[i][j];
-	// 		int x = to_byte(color.x);
-	// 		int y = to_byte(color.y);
-	// 		int z = to_byte(color.z);
-	// 		printf("%d %d %d\n", x, y, z);
-	// 	}
-	// 	// fprintf(ptr,"\n");
-	// }
 }
