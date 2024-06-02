@@ -2,14 +2,21 @@ use pyo3::prelude::*;
 use std::ops::{Add, Sub, Mul};
 
 #[derive(Debug, Clone)]
+#[pyclass]
 pub struct Vector{
     pub x: f64,
     pub y: f64,
     pub z: f64
 }
 
+
+#[pymethods]
 impl Vector{
-    // Normalization
+    #[new]
+    pub fn new() -> Self{
+        Vector { x: 0.0, y: 0.0, z: 0.0 }
+    }
+
     pub fn normalize(&self) -> Vector {
         let mag = self.magnitude();
         Vector {

@@ -15,7 +15,7 @@ use scene::*;
 use ray::Ray;
 
 
-fn color_at_py(intersect_pos: Vector, intersect_ray_direction: Vector, light_arr: &Vec<Light>, mut scene_arr: &Vec<Scene>, closest_obj_index: i32, accuracy: f64, ambient: f64) -> Option<Color>{
+fn color_at_py(intersect_pos: Vector, intersect_ray_direction: Vector, light_arr: &Vec<Light>, scene_arr: &Vec<Scene>, closest_obj_index: i32, accuracy: f64, ambient: f64) -> Option<Color>{
     let mut sc = scene_arr.clone();
     let scene: &mut Scene = sc.get_mut(closest_obj_index as usize).unwrap();
 
@@ -71,7 +71,7 @@ fn color_at_py(intersect_pos: Vector, intersect_ray_direction: Vector, light_arr
                     &light_arr, &scene_arr,
                     closest_obj_index, accuracy, ambient).unwrap();
                     
-                    let final_color = final_color.clone() + reflect_intersection_color.scale(closest_obj_color.special);
+                    final_color = final_color.clone() + reflect_intersection_color.scale(closest_obj_color.special);
                     
                 }
                 
@@ -184,7 +184,7 @@ fn color_at_py(intersect_pos: Vector, intersect_ray_direction: Vector, light_arr
                     &light_arr, &scene_arr,
                     closest_obj_index, accuracy, ambient).unwrap();
                     
-                    let final_color = final_color.clone() + reflect_intersection_color.scale(closest_obj_color.special);
+                    final_color = final_color.clone() + reflect_intersection_color.scale(closest_obj_color.special);
                     
                 }
                 
@@ -251,9 +251,7 @@ fn color_at_py(intersect_pos: Vector, intersect_ray_direction: Vector, light_arr
 #[pyfunction]
 fn color_at(intersect_pos: PyObject, intersect_ray_direction: PyObject, scene_objects: Vec<PyObject>,
     closest_obj_index: i32, lights: Vec<PyObject>, accuracy: f64, ambient: f64) -> PyResult<Color>{
-        let (intersect_pos, intersect_ray_direction, light_arr, mut scene_arr) = Python::with_gil(|py|{
-            let object_ref: &PyAny = intersect_pos.extract(py).unwrap();
-            
+        let (intersect_pos, intersect_ray_direction, light_arr, scene_arr) = Python::with_gil(|py|{
             let intersect_pos = parse_vector(intersect_pos, &py);
             let intersect_ray_direction = parse_vector(intersect_ray_direction, &py);
             let mut light_arr = Vec::<Light>::new();
