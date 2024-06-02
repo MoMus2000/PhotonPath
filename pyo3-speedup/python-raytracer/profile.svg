@@ -1,0 +1,415 @@
+<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" width="1200" height="154" onload="init(evt)" viewBox="0 0 1200 154" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:fg="http://github.com/jonhoo/inferno"><!--Flame graph stack visualization. See https://github.com/brendangregg/FlameGraph for latest version, and http://www.brendangregg.com/flamegraphs.html for examples.--><!--NOTES: --><defs><linearGradient id="background" y1="0" y2="1" x1="0" x2="0"><stop stop-color="#eeeeee" offset="5%"/><stop stop-color="#eeeeb0" offset="95%"/></linearGradient></defs><style type="text/css">
+text { font-family:"Verdana"; font-size:12px; fill:rgb(0,0,0); }
+#title { text-anchor:middle; font-size:17px; }
+#matched { text-anchor:end; }
+#search { text-anchor:end; opacity:0.1; cursor:pointer; }
+#search:hover, #search.show { opacity:1; }
+#subtitle { text-anchor:middle; font-color:rgb(160,160,160); }
+#unzoom { cursor:pointer; }
+#frames > *:hover { stroke:black; stroke-width:0.5; cursor:pointer; }
+.hide { display:none; }
+.parent { opacity:0.5; }
+</style><script type="text/ecmascript"><![CDATA[
+        var nametype = 'Function:';
+        var fontsize = 12;
+        var fontwidth = 0.59;
+        var xpad = 10;
+        var inverted = true;
+        var searchcolor = 'rgb(230,0,230)';
+        var fluiddrawing = true;
+        var truncate_text_right = false;
+    ]]><![CDATA["use strict";
+var details, searchbtn, unzoombtn, matchedtxt, svg, searching, frames;
+function init(evt) {
+    details = document.getElementById("details").firstChild;
+    searchbtn = document.getElementById("search");
+    unzoombtn = document.getElementById("unzoom");
+    matchedtxt = document.getElementById("matched");
+    svg = document.getElementsByTagName("svg")[0];
+    frames = document.getElementById("frames");
+    total_samples = parseInt(frames.attributes.total_samples.value);
+    searching = 0;
+
+    // Use GET parameters to restore a flamegraph's state.
+    var restore_state = function() {
+        var params = get_params();
+        if (params.x && params.y)
+            zoom(find_group(document.querySelector('[*|x="' + params.x + '"][y="' + params.y + '"]')));
+        if (params.s)
+            search(params.s);
+    };
+
+    if (fluiddrawing) {
+        // Make width dynamic so the SVG fits its parent's width.
+        svg.removeAttribute("width");
+        // Edge requires us to have a viewBox that gets updated with size changes.
+        var isEdge = /Edge\/\d./i.test(navigator.userAgent);
+        var update_for_width_change = function() {
+            if (isEdge) {
+                svg.attributes.viewBox.value = "0 0 " + svg.width.baseVal.value + " " + svg.height.baseVal.value;
+            }
+
+            // Keep consistent padding on left and right of frames container.
+            frames.attributes.width.value = svg.width.baseVal.value - xpad * 2;
+
+            // Text truncation needs to be adjusted for the current width.
+            var el = frames.children;
+            for(var i = 0; i < el.length; i++) {
+                update_text(el[i]);
+            }
+
+            // Keep search elements at a fixed distance from right edge.
+            var svgWidth = svg.width.baseVal.value;
+            searchbtn.attributes.x.value = svgWidth - xpad;
+            matchedtxt.attributes.x.value = svgWidth - xpad;
+        };
+        window.addEventListener('resize', function() {
+            update_for_width_change();
+        });
+        // This needs to be done asynchronously for Safari to work.
+        setTimeout(function() {
+            unzoom();
+            update_for_width_change();
+            restore_state();
+            if (!isEdge) {
+                svg.removeAttribute("viewBox");
+            }
+        }, 0);
+    } else {
+        restore_state();
+    }
+}
+// event listeners
+window.addEventListener("click", function(e) {
+    var target = find_group(e.target);
+    if (target) {
+        if (target.nodeName == "a") {
+            if (e.ctrlKey === false) return;
+            e.preventDefault();
+        }
+        if (target.classList.contains("parent")) unzoom();
+        zoom(target);
+
+        // set parameters for zoom state
+        var el = target.querySelector("rect");
+        if (el && el.attributes && el.attributes.y && el.attributes["fg:x"]) {
+            var params = get_params()
+            params.x = el.attributes["fg:x"].value;
+            params.y = el.attributes.y.value;
+            history.replaceState(null, null, parse_params(params));
+        }
+    }
+    else if (e.target.id == "unzoom") {
+        unzoom();
+
+        // remove zoom state
+        var params = get_params();
+        if (params.x) delete params.x;
+        if (params.y) delete params.y;
+        history.replaceState(null, null, parse_params(params));
+    }
+    else if (e.target.id == "search") search_prompt();
+}, false)
+// mouse-over for info
+// show
+window.addEventListener("mouseover", function(e) {
+    var target = find_group(e.target);
+    if (target) details.nodeValue = nametype + " " + g_to_text(target);
+}, false)
+// clear
+window.addEventListener("mouseout", function(e) {
+    var target = find_group(e.target);
+    if (target) details.nodeValue = ' ';
+}, false)
+// ctrl-F for search
+window.addEventListener("keydown",function (e) {
+    if (e.keyCode === 114 || (e.ctrlKey && e.keyCode === 70)) {
+        e.preventDefault();
+        search_prompt();
+    }
+}, false)
+// functions
+function get_params() {
+    var params = {};
+    var paramsarr = window.location.search.substr(1).split('&');
+    for (var i = 0; i < paramsarr.length; ++i) {
+        var tmp = paramsarr[i].split("=");
+        if (!tmp[0] || !tmp[1]) continue;
+        params[tmp[0]]  = decodeURIComponent(tmp[1]);
+    }
+    return params;
+}
+function parse_params(params) {
+    var uri = "?";
+    for (var key in params) {
+        uri += key + '=' + encodeURIComponent(params[key]) + '&';
+    }
+    if (uri.slice(-1) == "&")
+        uri = uri.substring(0, uri.length - 1);
+    if (uri == '?')
+        uri = window.location.href.split('?')[0];
+    return uri;
+}
+function find_child(node, selector) {
+    var children = node.querySelectorAll(selector);
+    if (children.length) return children[0];
+    return;
+}
+function find_group(node) {
+    var parent = node.parentElement;
+    if (!parent) return;
+    if (parent.id == "frames") return node;
+    return find_group(parent);
+}
+function orig_save(e, attr, val) {
+    if (e.attributes["fg:orig_" + attr] != undefined) return;
+    if (e.attributes[attr] == undefined) return;
+    if (val == undefined) val = e.attributes[attr].value;
+    e.setAttribute("fg:orig_" + attr, val);
+}
+function orig_load(e, attr) {
+    if (e.attributes["fg:orig_"+attr] == undefined) return;
+    e.attributes[attr].value = e.attributes["fg:orig_" + attr].value;
+    e.removeAttribute("fg:orig_" + attr);
+}
+function g_to_text(e) {
+    var text = find_child(e, "title").firstChild.nodeValue;
+    return (text)
+}
+function g_to_func(e) {
+    var func = g_to_text(e);
+    // if there's any manipulation we want to do to the function
+    // name before it's searched, do it here before returning.
+    return (func);
+}
+function update_text(e) {
+    var r = find_child(e, "rect");
+    var t = find_child(e, "text");
+    var w = parseFloat(r.attributes.width.value) * frames.attributes.width.value / 100 - 3;
+    var txt = find_child(e, "title").textContent.replace(/\([^(]*\)$/,"");
+    t.attributes.x.value = format_percent((parseFloat(r.attributes.x.value) + (100 * 3 / frames.attributes.width.value)));
+    // Smaller than this size won't fit anything
+    if (w < 2 * fontsize * fontwidth) {
+        t.textContent = "";
+        return;
+    }
+    t.textContent = txt;
+    // Fit in full text width
+    if (/^ *\$/.test(txt) || t.getComputedTextLength() < w)
+        return;
+    if (truncate_text_right) {
+        // Truncate the right side of the text.
+        for (var x = txt.length - 2; x > 0; x--) {
+            if (t.getSubStringLength(0, x + 2) <= w) {
+                t.textContent = txt.substring(0, x) + "..";
+                return;
+            }
+        }
+    } else {
+        // Truncate the left side of the text.
+        for (var x = 2; x < txt.length; x++) {
+            if (t.getSubStringLength(x - 2, txt.length) <= w) {
+                t.textContent = ".." + txt.substring(x, txt.length);
+                return;
+            }
+        }
+    }
+    t.textContent = "";
+}
+// zoom
+function zoom_reset(e) {
+    if (e.tagName == "rect") {
+        e.attributes.x.value = format_percent(100 * parseInt(e.attributes["fg:x"].value) / total_samples);
+        e.attributes.width.value = format_percent(100 * parseInt(e.attributes["fg:w"].value) / total_samples);
+    }
+    if (e.childNodes == undefined) return;
+    for(var i = 0, c = e.childNodes; i < c.length; i++) {
+        zoom_reset(c[i]);
+    }
+}
+function zoom_child(e, x, zoomed_width_samples) {
+    if (e.tagName == "text") {
+        var parent_x = parseFloat(find_child(e.parentNode, "rect[x]").attributes.x.value);
+        e.attributes.x.value = format_percent(parent_x + (100 * 3 / frames.attributes.width.value));
+    } else if (e.tagName == "rect") {
+        e.attributes.x.value = format_percent(100 * (parseInt(e.attributes["fg:x"].value) - x) / zoomed_width_samples);
+        e.attributes.width.value = format_percent(100 * parseInt(e.attributes["fg:w"].value) / zoomed_width_samples);
+    }
+    if (e.childNodes == undefined) return;
+    for(var i = 0, c = e.childNodes; i < c.length; i++) {
+        zoom_child(c[i], x, zoomed_width_samples);
+    }
+}
+function zoom_parent(e) {
+    if (e.attributes) {
+        if (e.attributes.x != undefined) {
+            e.attributes.x.value = "0.0%";
+        }
+        if (e.attributes.width != undefined) {
+            e.attributes.width.value = "100.0%";
+        }
+    }
+    if (e.childNodes == undefined) return;
+    for(var i = 0, c = e.childNodes; i < c.length; i++) {
+        zoom_parent(c[i]);
+    }
+}
+function zoom(node) {
+    var attr = find_child(node, "rect").attributes;
+    var width = parseInt(attr["fg:w"].value);
+    var xmin = parseInt(attr["fg:x"].value);
+    var xmax = xmin + width;
+    var ymin = parseFloat(attr.y.value);
+    unzoombtn.classList.remove("hide");
+    var el = frames.children;
+    for (var i = 0; i < el.length; i++) {
+        var e = el[i];
+        var a = find_child(e, "rect").attributes;
+        var ex = parseInt(a["fg:x"].value);
+        var ew = parseInt(a["fg:w"].value);
+        // Is it an ancestor
+        if (!inverted) {
+            var upstack = parseFloat(a.y.value) > ymin;
+        } else {
+            var upstack = parseFloat(a.y.value) < ymin;
+        }
+        if (upstack) {
+            // Direct ancestor
+            if (ex <= xmin && (ex+ew) >= xmax) {
+                e.classList.add("parent");
+                zoom_parent(e);
+                update_text(e);
+            }
+            // not in current path
+            else
+                e.classList.add("hide");
+        }
+        // Children maybe
+        else {
+            // no common path
+            if (ex < xmin || ex >= xmax) {
+                e.classList.add("hide");
+            }
+            else {
+                zoom_child(e, xmin, width);
+                update_text(e);
+            }
+        }
+    }
+}
+function unzoom() {
+    unzoombtn.classList.add("hide");
+    var el = frames.children;
+    for(var i = 0; i < el.length; i++) {
+        el[i].classList.remove("parent");
+        el[i].classList.remove("hide");
+        zoom_reset(el[i]);
+        update_text(el[i]);
+    }
+}
+// search
+function reset_search() {
+    var el = document.querySelectorAll("#frames rect");
+    for (var i = 0; i < el.length; i++) {
+        orig_load(el[i], "fill")
+    }
+    var params = get_params();
+    delete params.s;
+    history.replaceState(null, null, parse_params(params));
+}
+function search_prompt() {
+    if (!searching) {
+        var term = prompt("Enter a search term (regexp " +
+            "allowed, eg: ^ext4_)", "");
+        if (term != null) {
+            search(term)
+        }
+    } else {
+        reset_search();
+        searching = 0;
+        searchbtn.classList.remove("show");
+        searchbtn.firstChild.nodeValue = "Search"
+        matchedtxt.classList.add("hide");
+        matchedtxt.firstChild.nodeValue = ""
+    }
+}
+function search(term) {
+    var re = new RegExp(term);
+    var el = frames.children;
+    var matches = new Object();
+    var maxwidth = 0;
+    for (var i = 0; i < el.length; i++) {
+        var e = el[i];
+        // Skip over frames which are either not visible, or below the zoomed-to frame
+        if (e.classList.contains("hide") || e.classList.contains("parent")) {
+            continue;
+        }
+        var func = g_to_func(e);
+        var rect = find_child(e, "rect");
+        if (func == null || rect == null)
+            continue;
+        // Save max width. Only works as we have a root frame
+        var w = parseInt(rect.attributes["fg:w"].value);
+        if (w > maxwidth)
+            maxwidth = w;
+        if (func.match(re)) {
+            // highlight
+            var x = parseInt(rect.attributes["fg:x"].value);
+            orig_save(rect, "fill");
+            rect.attributes.fill.value = searchcolor;
+            // remember matches
+            if (matches[x] == undefined) {
+                matches[x] = w;
+            } else {
+                if (w > matches[x]) {
+                    // overwrite with parent
+                    matches[x] = w;
+                }
+            }
+            searching = 1;
+        }
+    }
+    if (!searching)
+        return;
+    var params = get_params();
+    params.s = term;
+    history.replaceState(null, null, parse_params(params));
+
+    searchbtn.classList.add("show");
+    searchbtn.firstChild.nodeValue = "Reset Search";
+    // calculate percent matched, excluding vertical overlap
+    var count = 0;
+    var lastx = -1;
+    var lastw = 0;
+    var keys = Array();
+    for (k in matches) {
+        if (matches.hasOwnProperty(k))
+            keys.push(k);
+    }
+    // sort the matched frames by their x location
+    // ascending, then width descending
+    keys.sort(function(a, b){
+        return a - b;
+    });
+    // Step through frames saving only the biggest bottom-up frames
+    // thanks to the sort order. This relies on the tree property
+    // where children are always smaller than their parents.
+    for (var k in keys) {
+        var x = parseInt(keys[k]);
+        var w = matches[keys[k]];
+        if (x >= lastx + lastw) {
+            count += w;
+            lastx = x;
+            lastw = w;
+        }
+    }
+    // display matched percent
+    matchedtxt.classList.remove("hide");
+    var pct = 100 * count / maxwidth;
+    if (pct != 100) pct = pct.toFixed(1);
+    matchedtxt.firstChild.nodeValue = "Matched: " + pct + "%";
+}
+function format_percent(n) {
+    return n.toFixed(4) + "%";
+}
+]]></script><rect x="0" y="0" width="100%" height="154" fill="url(#background)"/><text id="title" x="50.0000%" y="24.00">py-spy record -o profile.svg -- python3 main.py</text><text id="details" x="10" y="40.00"> </text><text id="unzoom" class="hide" x="10" y="24.00">Reset Zoom</text><text id="search" x="1190" y="24.00">Search</text><text id="matched" x="1190" y="143.00"> </text><svg id="frames" x="10" width="1180" total_samples="56913"><g><title>&lt;module&gt; (main.py:234) (150 samples, 0.26%)</title><rect x="0.1265%" y="68" width="0.2636%" height="15" fill="rgb(227,0,7)" fg:x="72" fg:w="150"/><text x="0.3765%" y="78.50"></text></g><g><title>intersect (Triangle.py:24) (1,893 samples, 3.33%)</title><rect x="4.1748%" y="84" width="3.3261%" height="15" fill="rgb(217,0,24)" fg:x="2376" fg:w="1893"/><text x="4.4248%" y="94.50">int..</text></g><g><title>dot_product (Vector3D.py:35) (1,304 samples, 2.29%)</title><rect x="5.2097%" y="100" width="2.2912%" height="15" fill="rgb(221,193,54)" fg:x="2965" fg:w="1304"/><text x="5.4597%" y="110.50">d..</text></g><g><title>intersect (Triangle.py:26) (110 samples, 0.19%)</title><rect x="7.5009%" y="84" width="0.1933%" height="15" fill="rgb(248,212,6)" fg:x="4269" fg:w="110"/><text x="7.7509%" y="94.50"></text></g><g><title>__init__ (Vector3D.py:10) (205 samples, 0.36%)</title><rect x="14.7137%" y="116" width="0.3602%" height="15" fill="rgb(208,68,35)" fg:x="8374" fg:w="205"/><text x="14.9637%" y="126.50"></text></g><g><title>__init__ (Vector3D.py:8) (223 samples, 0.39%)</title><rect x="15.1125%" y="116" width="0.3918%" height="15" fill="rgb(232,128,0)" fg:x="8601" fg:w="223"/><text x="15.3625%" y="126.50"></text></g><g><title>__add__ (Vector3D.py:13) (2,287 samples, 4.02%)</title><rect x="11.7530%" y="100" width="4.0184%" height="15" fill="rgb(207,160,47)" fg:x="6689" fg:w="2287"/><text x="12.0030%" y="110.50">__ad..</text></g><g><title>__init__ (Vector3D.py:9) (152 samples, 0.27%)</title><rect x="15.5044%" y="116" width="0.2671%" height="15" fill="rgb(228,23,34)" fg:x="8824" fg:w="152"/><text x="15.7544%" y="126.50"></text></g><g><title>__init__ (Vector3D.py:10) (152 samples, 0.27%)</title><rect x="17.5285%" y="116" width="0.2671%" height="15" fill="rgb(218,30,26)" fg:x="9976" fg:w="152"/><text x="17.7785%" y="126.50"></text></g><g><title>__init__ (Vector3D.py:8) (239 samples, 0.42%)</title><rect x="17.8624%" y="116" width="0.4199%" height="15" fill="rgb(220,122,19)" fg:x="10166" fg:w="239"/><text x="18.1124%" y="126.50"></text></g><g><title>__mul__ (Vector3D.py:16) (1,589 samples, 2.79%)</title><rect x="15.7996%" y="100" width="2.7920%" height="15" fill="rgb(250,228,42)" fg:x="8992" fg:w="1589"/><text x="16.0496%" y="110.50">__..</text></g><g><title>__init__ (Vector3D.py:9) (176 samples, 0.31%)</title><rect x="18.2823%" y="116" width="0.3092%" height="15" fill="rgb(240,193,28)" fg:x="10405" fg:w="176"/><text x="18.5323%" y="126.50"></text></g><g><title>dot_product (Vector3D.py:35) (1,217 samples, 2.14%)</title><rect x="18.6548%" y="100" width="2.1384%" height="15" fill="rgb(216,20,37)" fg:x="10617" fg:w="1217"/><text x="18.9048%" y="110.50">d..</text></g><g><title>__init__ (Vector3D.py:10) (169 samples, 0.30%)</title><rect x="22.9526%" y="116" width="0.2969%" height="15" fill="rgb(206,188,39)" fg:x="13063" fg:w="169"/><text x="23.2026%" y="126.50"></text></g><g><title>__init__ (Vector3D.py:8) (246 samples, 0.43%)</title><rect x="23.2917%" y="116" width="0.4322%" height="15" fill="rgb(217,207,13)" fg:x="13256" fg:w="246"/><text x="23.5417%" y="126.50"></text></g><g><title>intersect (Triangle.py:29) (9,295 samples, 16.33%)</title><rect x="7.6942%" y="84" width="16.3319%" height="15" fill="rgb(231,73,38)" fg:x="4379" fg:w="9295"/><text x="7.9442%" y="94.50">intersect (Triangle.py:29)</text></g><g><title>negative (Vector3D.py:32) (1,812 samples, 3.18%)</title><rect x="20.8423%" y="100" width="3.1838%" height="15" fill="rgb(225,20,46)" fg:x="11862" fg:w="1812"/><text x="21.0923%" y="110.50">neg..</text></g><g><title>__init__ (Vector3D.py:9) (172 samples, 0.30%)</title><rect x="23.7239%" y="116" width="0.3022%" height="15" fill="rgb(210,31,41)" fg:x="13502" fg:w="172"/><text x="23.9739%" y="126.50"></text></g><g><title>intersect (Triangle.py:30) (255 samples, 0.45%)</title><rect x="24.0261%" y="84" width="0.4481%" height="15" fill="rgb(221,200,47)" fg:x="13674" fg:w="255"/><text x="24.2761%" y="94.50"></text></g><g><title>__init__ (Vector3D.py:10) (169 samples, 0.30%)</title><rect x="29.2569%" y="116" width="0.2969%" height="15" fill="rgb(226,26,5)" fg:x="16651" fg:w="169"/><text x="29.5069%" y="126.50"></text></g><g><title>__init__ (Vector3D.py:8) (264 samples, 0.46%)</title><rect x="29.5644%" y="116" width="0.4639%" height="15" fill="rgb(249,33,26)" fg:x="16826" fg:w="264"/><text x="29.8144%" y="126.50"></text></g><g><title>__add__ (Vector3D.py:13) (2,209 samples, 3.88%)</title><rect x="26.4052%" y="100" width="3.8814%" height="15" fill="rgb(235,183,28)" fg:x="15028" fg:w="2209"/><text x="26.6552%" y="110.50">__ad..</text></g><g><title>__init__ (Vector3D.py:9) (147 samples, 0.26%)</title><rect x="30.0283%" y="116" width="0.2583%" height="15" fill="rgb(221,5,38)" fg:x="17090" fg:w="147"/><text x="30.2783%" y="126.50"></text></g><g><title>__init__ (Vector3D.py:10) (202 samples, 0.35%)</title><rect x="31.9821%" y="116" width="0.3549%" height="15" fill="rgb(247,18,42)" fg:x="18202" fg:w="202"/><text x="32.2321%" y="126.50"></text></g><g><title>__init__ (Vector3D.py:8) (247 samples, 0.43%)</title><rect x="32.3828%" y="116" width="0.4340%" height="15" fill="rgb(241,131,45)" fg:x="18430" fg:w="247"/><text x="32.6328%" y="126.50"></text></g><g><title>intersect (Triangle.py:32) (4,901 samples, 8.61%)</title><rect x="24.4742%" y="84" width="8.6114%" height="15" fill="rgb(249,31,29)" fg:x="13929" fg:w="4901"/><text x="24.7242%" y="94.50">intersect (T..</text></g><g><title>__mul__ (Vector3D.py:16) (1,562 samples, 2.74%)</title><rect x="30.3410%" y="100" width="2.7445%" height="15" fill="rgb(225,111,53)" fg:x="17268" fg:w="1562"/><text x="30.5910%" y="110.50">__..</text></g><g><title>__init__ (Vector3D.py:9) (153 samples, 0.27%)</title><rect x="32.8168%" y="116" width="0.2688%" height="15" fill="rgb(238,160,17)" fg:x="18677" fg:w="153"/><text x="33.0668%" y="126.50"></text></g><g><title>__init__ (Vector3D.py:10) (193 samples, 0.34%)</title><rect x="36.8422%" y="116" width="0.3391%" height="15" fill="rgb(214,148,48)" fg:x="20968" fg:w="193"/><text x="37.0922%" y="126.50"></text></g><g><title>__init__ (Vector3D.py:8) (248 samples, 0.44%)</title><rect x="37.2094%" y="116" width="0.4358%" height="15" fill="rgb(232,36,49)" fg:x="21177" fg:w="248"/><text x="37.4594%" y="126.50"></text></g><g><title>intersect (Triangle.py:34) (2,803 samples, 4.93%)</title><rect x="33.0856%" y="84" width="4.9251%" height="15" fill="rgb(209,103,24)" fg:x="18830" fg:w="2803"/><text x="33.3356%" y="94.50">inters..</text></g><g><title>__sub__ (Vector3D.py:19) (2,182 samples, 3.83%)</title><rect x="34.1767%" y="100" width="3.8339%" height="15" fill="rgb(229,88,8)" fg:x="19451" fg:w="2182"/><text x="34.4267%" y="110.50">__su..</text></g><g><title>__init__ (Vector3D.py:9) (208 samples, 0.37%)</title><rect x="37.6452%" y="116" width="0.3655%" height="15" fill="rgb(213,181,19)" fg:x="21425" fg:w="208"/><text x="37.8952%" y="126.50"></text></g><g><title>__init__ (Vector3D.py:10) (218 samples, 0.38%)</title><rect x="41.8744%" y="116" width="0.3830%" height="15" fill="rgb(254,191,54)" fg:x="23832" fg:w="218"/><text x="42.1244%" y="126.50"></text></g><g><title>__init__ (Vector3D.py:8) (234 samples, 0.41%)</title><rect x="42.3014%" y="116" width="0.4112%" height="15" fill="rgb(241,83,37)" fg:x="24075" fg:w="234"/><text x="42.5514%" y="126.50"></text></g><g><title>intersect (Triangle.py:35) (2,867 samples, 5.04%)</title><rect x="38.0106%" y="84" width="5.0375%" height="15" fill="rgb(233,36,39)" fg:x="21633" fg:w="2867"/><text x="38.2606%" y="94.50">inters..</text></g><g><title>__sub__ (Vector3D.py:19) (2,423 samples, 4.26%)</title><rect x="38.7908%" y="100" width="4.2574%" height="15" fill="rgb(226,3,54)" fg:x="22077" fg:w="2423"/><text x="39.0408%" y="110.50">__sub..</text></g><g><title>__init__ (Vector3D.py:9) (191 samples, 0.34%)</title><rect x="42.7126%" y="116" width="0.3356%" height="15" fill="rgb(245,192,40)" fg:x="24309" fg:w="191"/><text x="42.9626%" y="126.50"></text></g><g><title>__init__ (Vector3D.py:10) (174 samples, 0.31%)</title><rect x="46.4867%" y="116" width="0.3057%" height="15" fill="rgb(238,167,29)" fg:x="26457" fg:w="174"/><text x="46.7367%" y="126.50"></text></g><g><title>__init__ (Vector3D.py:8) (253 samples, 0.44%)</title><rect x="46.8294%" y="116" width="0.4445%" height="15" fill="rgb(232,182,51)" fg:x="26652" fg:w="253"/><text x="47.0794%" y="126.50"></text></g><g><title>intersect (Triangle.py:37) (2,572 samples, 4.52%)</title><rect x="43.0482%" y="84" width="4.5192%" height="15" fill="rgb(231,60,39)" fg:x="24500" fg:w="2572"/><text x="43.2982%" y="94.50">inter..</text></g><g><title>__sub__ (Vector3D.py:19) (1,903 samples, 3.34%)</title><rect x="44.2236%" y="100" width="3.3437%" height="15" fill="rgb(208,69,12)" fg:x="25169" fg:w="1903"/><text x="44.4736%" y="110.50">__s..</text></g><g><title>__init__ (Vector3D.py:9) (167 samples, 0.29%)</title><rect x="47.2739%" y="116" width="0.2934%" height="15" fill="rgb(235,93,37)" fg:x="26905" fg:w="167"/><text x="47.5239%" y="126.50"></text></g><g><title>__init__ (Vector3D.py:10) (205 samples, 0.36%)</title><rect x="51.3169%" y="116" width="0.3602%" height="15" fill="rgb(213,116,39)" fg:x="29206" fg:w="205"/><text x="51.5669%" y="126.50"></text></g><g><title>__init__ (Vector3D.py:8) (358 samples, 0.63%)</title><rect x="51.7123%" y="116" width="0.6290%" height="15" fill="rgb(222,207,29)" fg:x="29431" fg:w="358"/><text x="51.9623%" y="126.50"></text></g><g><title>intersect (Triangle.py:38) (2,888 samples, 5.07%)</title><rect x="47.5673%" y="84" width="5.0744%" height="15" fill="rgb(206,96,30)" fg:x="27072" fg:w="2888"/><text x="47.8173%" y="94.50">inters..</text></g><g><title>__sub__ (Vector3D.py:19) (2,416 samples, 4.25%)</title><rect x="48.3967%" y="100" width="4.2451%" height="15" fill="rgb(218,138,4)" fg:x="27544" fg:w="2416"/><text x="48.6467%" y="110.50">__sub..</text></g><g><title>__init__ (Vector3D.py:9) (171 samples, 0.30%)</title><rect x="52.3413%" y="116" width="0.3005%" height="15" fill="rgb(250,191,14)" fg:x="29789" fg:w="171"/><text x="52.5913%" y="126.50"></text></g><g><title>__init__ (Vector3D.py:10) (182 samples, 0.32%)</title><rect x="56.3334%" y="116" width="0.3198%" height="15" fill="rgb(239,60,40)" fg:x="32061" fg:w="182"/><text x="56.5834%" y="126.50"></text></g><g><title>__init__ (Vector3D.py:8) (245 samples, 0.43%)</title><rect x="56.6900%" y="116" width="0.4305%" height="15" fill="rgb(206,27,48)" fg:x="32264" fg:w="245"/><text x="56.9400%" y="126.50"></text></g><g><title>intersect (Triangle.py:40) (2,705 samples, 4.75%)</title><rect x="52.6418%" y="84" width="4.7529%" height="15" fill="rgb(225,35,8)" fg:x="29960" fg:w="2705"/><text x="52.8918%" y="94.50">inters..</text></g><g><title>__sub__ (Vector3D.py:19) (2,052 samples, 3.61%)</title><rect x="53.7891%" y="100" width="3.6055%" height="15" fill="rgb(250,213,24)" fg:x="30613" fg:w="2052"/><text x="54.0391%" y="110.50">__su..</text></g><g><title>__init__ (Vector3D.py:9) (156 samples, 0.27%)</title><rect x="57.1205%" y="116" width="0.2741%" height="15" fill="rgb(247,123,22)" fg:x="32509" fg:w="156"/><text x="57.3705%" y="126.50"></text></g><g><title>__init__ (Vector3D.py:10) (199 samples, 0.35%)</title><rect x="61.1706%" y="116" width="0.3497%" height="15" fill="rgb(231,138,38)" fg:x="34814" fg:w="199"/><text x="61.4206%" y="126.50"></text></g><g><title>__init__ (Vector3D.py:8) (240 samples, 0.42%)</title><rect x="61.5589%" y="116" width="0.4217%" height="15" fill="rgb(231,145,46)" fg:x="35035" fg:w="240"/><text x="61.8089%" y="126.50"></text></g><g><title>intersect (Triangle.py:41) (2,823 samples, 4.96%)</title><rect x="57.3946%" y="84" width="4.9602%" height="15" fill="rgb(251,118,11)" fg:x="32665" fg:w="2823"/><text x="57.6446%" y="94.50">inters..</text></g><g><title>__sub__ (Vector3D.py:19) (2,366 samples, 4.16%)</title><rect x="58.1976%" y="100" width="4.1572%" height="15" fill="rgb(217,147,25)" fg:x="33122" fg:w="2366"/><text x="58.4476%" y="110.50">__sub..</text></g><g><title>__init__ (Vector3D.py:9) (213 samples, 0.37%)</title><rect x="61.9806%" y="116" width="0.3743%" height="15" fill="rgb(247,81,37)" fg:x="35275" fg:w="213"/><text x="62.2306%" y="126.50"></text></g><g><title>__init__ (Vector3D.py:10) (199 samples, 0.35%)</title><rect x="66.7651%" y="116" width="0.3497%" height="15" fill="rgb(209,12,38)" fg:x="37998" fg:w="199"/><text x="67.0151%" y="126.50"></text></g><g><title>__init__ (Vector3D.py:8) (229 samples, 0.40%)</title><rect x="67.1551%" y="116" width="0.4024%" height="15" fill="rgb(227,1,9)" fg:x="38220" fg:w="229"/><text x="67.4051%" y="126.50"></text></g><g><title>cross_product (Vector3D.py:38) (1,954 samples, 3.43%)</title><rect x="64.4756%" y="100" width="3.4333%" height="15" fill="rgb(248,47,43)" fg:x="36695" fg:w="1954"/><text x="64.7256%" y="110.50">cro..</text></g><g><title>__init__ (Vector3D.py:9) (200 samples, 0.35%)</title><rect x="67.5575%" y="116" width="0.3514%" height="15" fill="rgb(221,10,30)" fg:x="38449" fg:w="200"/><text x="67.8075%" y="126.50"></text></g><g><title>cross_product (Vector3D.py:39) (564 samples, 0.99%)</title><rect x="67.9089%" y="100" width="0.9910%" height="15" fill="rgb(210,229,1)" fg:x="38649" fg:w="564"/><text x="68.1589%" y="110.50"></text></g><g><title>cross_product (Vector3D.py:40) (798 samples, 1.40%)</title><rect x="68.8999%" y="100" width="1.4021%" height="15" fill="rgb(222,148,37)" fg:x="39213" fg:w="798"/><text x="69.1499%" y="110.50"></text></g><g><title>intersect (Triangle.py:43) (5,825 samples, 10.23%)</title><rect x="62.3548%" y="84" width="10.2349%" height="15" fill="rgb(234,67,33)" fg:x="35488" fg:w="5825"/><text x="62.6048%" y="94.50">intersect (Tria..</text></g><g><title>dot_product (Vector3D.py:35) (1,277 samples, 2.24%)</title><rect x="70.3460%" y="100" width="2.2438%" height="15" fill="rgb(247,98,35)" fg:x="40036" fg:w="1277"/><text x="70.5960%" y="110.50">d..</text></g><g><title>__init__ (Vector3D.py:10) (135 samples, 0.24%)</title><rect x="75.1744%" y="116" width="0.2372%" height="15" fill="rgb(247,138,52)" fg:x="42784" fg:w="135"/><text x="75.4244%" y="126.50"></text></g><g><title>__init__ (Vector3D.py:8) (133 samples, 0.23%)</title><rect x="75.4415%" y="116" width="0.2337%" height="15" fill="rgb(213,79,30)" fg:x="42936" fg:w="133"/><text x="75.6915%" y="126.50"></text></g><g><title>cross_product (Vector3D.py:38) (1,199 samples, 2.11%)</title><rect x="73.6985%" y="100" width="2.1067%" height="15" fill="rgb(246,177,23)" fg:x="41944" fg:w="1199"/><text x="73.9485%" y="110.50">c..</text></g><g><title>__init__ (Vector3D.py:9) (74 samples, 0.13%)</title><rect x="75.6752%" y="116" width="0.1300%" height="15" fill="rgb(230,62,27)" fg:x="43069" fg:w="74"/><text x="75.9252%" y="126.50"></text></g><g><title>cross_product (Vector3D.py:39) (506 samples, 0.89%)</title><rect x="75.8052%" y="100" width="0.8891%" height="15" fill="rgb(216,154,8)" fg:x="43143" fg:w="506"/><text x="76.0552%" y="110.50"></text></g><g><title>cross_product (Vector3D.py:40) (373 samples, 0.66%)</title><rect x="76.6943%" y="100" width="0.6554%" height="15" fill="rgb(244,35,45)" fg:x="43649" fg:w="373"/><text x="76.9443%" y="110.50"></text></g><g><title>intersect (Triangle.py:44) (3,480 samples, 6.11%)</title><rect x="72.5897%" y="84" width="6.1146%" height="15" fill="rgb(251,115,12)" fg:x="41313" fg:w="3480"/><text x="72.8397%" y="94.50">intersec..</text></g><g><title>dot_product (Vector3D.py:35) (752 samples, 1.32%)</title><rect x="77.3830%" y="100" width="1.3213%" height="15" fill="rgb(240,54,50)" fg:x="44041" fg:w="752"/><text x="77.6330%" y="110.50"></text></g><g><title>cross_product (Vector3D.py:38) (386 samples, 0.68%)</title><rect x="79.0452%" y="100" width="0.6782%" height="15" fill="rgb(233,84,52)" fg:x="44987" fg:w="386"/><text x="79.2952%" y="110.50"></text></g><g><title>cross_product (Vector3D.py:39) (126 samples, 0.22%)</title><rect x="79.7234%" y="100" width="0.2214%" height="15" fill="rgb(207,117,47)" fg:x="45373" fg:w="126"/><text x="79.9734%" y="110.50"></text></g><g><title>cross_product (Vector3D.py:40) (137 samples, 0.24%)</title><rect x="79.9448%" y="100" width="0.2407%" height="15" fill="rgb(249,43,39)" fg:x="45499" fg:w="137"/><text x="80.1948%" y="110.50"></text></g><g><title>intersect (Triangle.py:45) (1,065 samples, 1.87%)</title><rect x="78.7043%" y="84" width="1.8713%" height="15" fill="rgb(209,38,44)" fg:x="44793" fg:w="1065"/><text x="78.9543%" y="94.50">i..</text></g><g><title>dot_product (Vector3D.py:35) (221 samples, 0.39%)</title><rect x="80.1873%" y="100" width="0.3883%" height="15" fill="rgb(236,212,23)" fg:x="45637" fg:w="221"/><text x="80.4373%" y="110.50"></text></g><g><title>intersect (Triangle.py:47) (109 samples, 0.19%)</title><rect x="80.5756%" y="84" width="0.1915%" height="15" fill="rgb(242,79,21)" fg:x="45858" fg:w="109"/><text x="80.8256%" y="94.50"></text></g><g><title>&lt;module&gt; (main.py:235) (45,757 samples, 80.40%)</title><rect x="0.3901%" y="68" width="80.3982%" height="15" fill="rgb(211,96,35)" fg:x="222" fg:w="45757"/><text x="0.6401%" y="78.50">&lt;module&gt; (main.py:235)</text></g><g><title>closest_object_index (RayTracer.py:18) (66 samples, 0.12%)</title><rect x="80.7917%" y="84" width="0.1160%" height="15" fill="rgb(253,215,40)" fg:x="45981" fg:w="66"/><text x="81.0417%" y="94.50"></text></g><g><title>closest_object_index (RayTracer.py:19) (183 samples, 0.32%)</title><rect x="80.9077%" y="84" width="0.3215%" height="15" fill="rgb(211,81,21)" fg:x="46047" fg:w="183"/><text x="81.1577%" y="94.50"></text></g><g><title>&lt;module&gt; (main.py:237) (499 samples, 0.88%)</title><rect x="80.7882%" y="68" width="0.8768%" height="15" fill="rgb(208,190,38)" fg:x="45979" fg:w="499"/><text x="81.0382%" y="78.50"></text></g><g><title>closest_object_index (RayTracer.py:24) (202 samples, 0.35%)</title><rect x="81.3101%" y="84" width="0.3549%" height="15" fill="rgb(235,213,38)" fg:x="46276" fg:w="202"/><text x="81.5601%" y="94.50"></text></g><g><title>color_at (RayTracer.py:34) (10,371 samples, 18.22%)</title><rect x="81.7001%" y="84" width="18.2226%" height="15" fill="rgb(237,122,38)" fg:x="46498" fg:w="10371"/><text x="81.9501%" y="94.50">color_at (RayTracer.py:34)</text></g><g><title>&lt;module&gt; (main.py:248) (10,379 samples, 18.24%)</title><rect x="81.6878%" y="68" width="18.2366%" height="15" fill="rgb(244,218,35)" fg:x="46491" fg:w="10379"/><text x="81.9378%" y="78.50">&lt;module&gt; (main.py:248)</text></g><g><title>all (56,913 samples, 100%)</title><rect x="0.0000%" y="52" width="100.0000%" height="15" fill="rgb(240,68,47)" fg:x="0" fg:w="56913"/><text x="0.2500%" y="62.50"></text></g></svg></svg>

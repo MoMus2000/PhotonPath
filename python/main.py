@@ -102,9 +102,10 @@ multi = True
 # pool = Pool(cpu_count()-1)
 
 def main():
+	print("Running")
 	lower = 0.0
 	upper = 4.0
-	length = 200
+	length = 1
 	arr = [lower + x*(upper-lower)/length for x in range(length)]
 
 
@@ -123,6 +124,7 @@ def main():
 	length=length*3
     
 	for val in three_sixty:
+		print("Running")
 		# print(f"{int(i/length * 100)}%", end = "\r")
 		if i < 10:
 			create_image((val, arr_y[i], -arr_z[i]), f"/Users/a./Desktop/ray/animated/rotating_circle0{i}")
@@ -135,7 +137,7 @@ def main():
 	j = 0
 	k = 0
 	for val in three_sixty:
-		# print(f"{int(i/length * 100)}%", end = "\r")
+		print(f"{int(i/length * 100)}%", end = "\r")
 		create_image((val, arr_y[j], -arr[k]), f"/Users/a./Desktop/ray/animated/rotating_circle{i}", sphere_move=(val, 0 ,0))
 		i+=1
 		j+=1
@@ -146,7 +148,7 @@ def main():
 	list.reverse(arr_z)
 	
 	for k in range(int(len(three_sixty))):
-		# print(f"{int(i/length * 100)}%", end = "\r")
+		print(f"{int(i/length * 100)}%", end = "\r")
 		create_image((three_sixty[k], arr_y[k], -arr[k]), f"/Users/a./Desktop/ray/animated/rotating_circle{i}")
 		i+=1
 
@@ -158,8 +160,8 @@ def main():
 
 
 def create_image(camera, img_name, sphere_move=None, compress=True):
-	WIDTH =  1280
-	HEIGHT = 512
+	WIDTH =  int(1280*0.9)
+	HEIGHT = int(512*0.9)
 
 	x_cam, y_cam, z_cam = camera
 	if sphere_move is not None:
