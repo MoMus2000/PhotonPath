@@ -1,3 +1,5 @@
+__author__ = 'halileohalilei'
+
 import math
 from Ray import Ray
 import raytracer_rs
