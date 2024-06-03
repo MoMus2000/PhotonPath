@@ -1,4 +1,4 @@
-use pyo3::prelude::*;
+use pyo3::{prelude::*, wrap_pymodule};
 
 mod color;
 mod light;
@@ -6,6 +6,7 @@ mod scene;
 mod vector;
 mod object_parser;
 mod ray;
+mod raytrace;
 
 use vector::Vector;
 use color::Color;
@@ -15,36 +16,36 @@ use scene::*;
 use ray::Ray;
 
 
-fn color_at_py(intersect_pos: Vector, intersect_ray_direction: Vector, light_arr: &Vec<Light>, scene_arr: &Vec<Scene>, closest_obj_index: i32, accuracy: f64, ambient: f64) -> Option<Color>{
+fn color_at_py(intersect_pos: Vector, intersect_ray_direction: Vector, light_arr: &Vec<Light>, scene_arr: &Vec<Scene>, closest_obj_index: i32, accuracy: f32, ambient: f32) -> Option<Color>{
     let mut sc = scene_arr.clone();
     let scene: &mut Scene = sc.get_mut(closest_obj_index as usize).unwrap();
 
     if scene.triangle.is_some(){
         let closest_obj_normal = scene.triangle.as_mut().unwrap().normal_at().clone();
         let closest_obj_color : &mut Color = &mut scene.triangle.as_mut().unwrap().color;
-        if closest_obj_color.special == 2f64{
-            let square = (intersect_pos.x.floor() + intersect_pos.z.floor()) as i64;
+        if closest_obj_color.special == 2f32{
+            let square = (intersect_pos.x.floor() + intersect_pos.z.floor()) as i32;
             if square % 2 == 0{
-                closest_obj_color.r = 0f64;
-                closest_obj_color.g = 0f64;
-                closest_obj_color.b = 0f64;
+                closest_obj_color.r = 0f32;
+                closest_obj_color.g = 0f32;
+                closest_obj_color.b = 0f32;
             }
             else{
-                closest_obj_color.r = 1f64;
-                closest_obj_color.g = 1f64;
-                closest_obj_color.b = 1f64;
+                closest_obj_color.r = 1f32;
+                closest_obj_color.g = 1f32;
+                closest_obj_color.b = 1f32;
             }
         }
         let mut final_color = closest_obj_color.scale(ambient);
-        if closest_obj_color.special < 0f64 {
+        if closest_obj_color.special < 0f32 {
             let dot = closest_obj_normal.dot_product(&intersect_ray_direction.negative());
             let scalar1 = &closest_obj_normal * dot;
             let add1 = &scalar1 + &intersect_ray_direction;
-            let scalar2 = &add1 * 2f64;
+            let scalar2 = &add1 * 2f32;
             let add2 = &intersect_ray_direction.negative() + &scalar2;
             let reflect_direction = add2.normalize();
             let reflection_ray = Ray{origin: intersect_pos.clone(), direction: reflect_direction.clone()};
-            let mut reflect_intersections= Vec::<f64>::new();
+            let mut reflect_intersections= Vec::<f32>::new();
             
             let sc = scene_arr.clone();
             
@@ -80,11 +81,11 @@ fn color_at_py(intersect_pos: Vector, intersect_ray_direction: Vector, light_arr
             let light_direction = (&light.position + &intersect_pos.negative()).normalize();
             let cos = closest_obj_normal.dot_product(&light_direction);
             
-            if cos > 0f64{
+            if cos > 0f32{
                 let mut shadowed = false;
                 let dist_to_light = (&light.position + &intersect_pos.negative()).magnitude();
                 let shadow_ray = Ray{origin: intersect_pos.clone(), direction:light_direction.clone()};
-                let mut secondary_intersects = Vec::<f64>::new();
+                let mut secondary_intersects = Vec::<f32>::new();
                 
                 for j in scene_arr{
                     if shadowed{
@@ -110,16 +111,16 @@ fn color_at_py(intersect_pos: Vector, intersect_ray_direction: Vector, light_arr
                     final_color = final_color.clone() + c.clone();
                     final_color = final_color * s1;
 
-                    if 0f64 < closest_obj_color.special && closest_obj_color.special <= 1f64{
+                    if 0f32 < closest_obj_color.special && closest_obj_color.special <= 1f32{
                         let dot = closest_obj_normal.dot_product(&intersect_ray_direction.negative());
                         let scalar1 = &closest_obj_normal * dot;
                         let add1 = &scalar1 + &intersect_ray_direction;
-                        let scalar2 = &add1 * 2f64;
+                        let scalar2 = &add1 * 2f32;
                         let add2 = &intersect_ray_direction.negative() + &scalar2;
                         let reflect_direction = add2.normalize();
                         let mut specular = reflect_direction.dot_product(&light_direction);
                         
-                        if specular > 0f64{
+                        if specular > 0f32{
                             specular = specular.powi(10);
                             final_color = final_color + light.color.scale(specular*closest_obj_color.special)
                         }
@@ -135,29 +136,29 @@ fn color_at_py(intersect_pos: Vector, intersect_ray_direction: Vector, light_arr
     else if scene.plane.is_some(){
         let closest_obj_normal = scene.plane.as_mut().unwrap().normal_at().clone();
         let closest_obj_color : &mut Color = &mut scene.plane.as_mut().unwrap().color;
-        if closest_obj_color.special == 2f64{
+        if closest_obj_color.special == 2f32{
             let square = (intersect_pos.x.floor() + intersect_pos.z.floor()) as i64;
             if square % 2 == 0{
-                closest_obj_color.r = 0f64;
-                closest_obj_color.g = 0f64;
-                closest_obj_color.b = 0f64;
+                closest_obj_color.r = 0f32;
+                closest_obj_color.g = 0f32;
+                closest_obj_color.b = 0f32;
             }
             else{
-                closest_obj_color.r = 1f64;
-                closest_obj_color.g = 1f64;
-                closest_obj_color.b = 1f64;
+                closest_obj_color.r = 1f32;
+                closest_obj_color.g = 1f32;
+                closest_obj_color.b = 1f32;
             }
         }
         let mut final_color = closest_obj_color.scale(ambient);
-        if closest_obj_color.special < 0f64 {
+        if closest_obj_color.special < 0f32 {
             let dot = closest_obj_normal.dot_product(&intersect_ray_direction.negative());
             let scalar1 = &closest_obj_normal * dot;
             let add1 = &scalar1 + &intersect_ray_direction;
-            let scalar2 = &add1 * 2f64;
+            let scalar2 = &add1 * 2f32;
             let add2 = &intersect_ray_direction.negative() + &scalar2;
             let reflect_direction = add2.normalize();
             let reflection_ray = Ray{origin: intersect_pos.clone(), direction: reflect_direction.clone()};
-            let mut reflect_intersections= Vec::<f64>::new();
+            let mut reflect_intersections= Vec::<f32>::new();
             
             let sc = scene_arr.clone();
             
@@ -193,11 +194,11 @@ fn color_at_py(intersect_pos: Vector, intersect_ray_direction: Vector, light_arr
             let light_direction = (&light.position + &intersect_pos.negative()).normalize();
             let cos = closest_obj_normal.dot_product(&light_direction);
             
-            if cos > 0f64{
+            if cos > 0f32{
                 let mut shadowed = false;
                 let dist_to_light = (&light.position + &intersect_pos.negative()).magnitude();
                 let shadow_ray = Ray{origin: intersect_pos.clone(), direction:light_direction.clone()};
-                let mut secondary_intersects = Vec::<f64>::new();
+                let mut secondary_intersects = Vec::<f32>::new();
                 
                 for j in scene_arr{
                     if shadowed{
@@ -223,16 +224,16 @@ fn color_at_py(intersect_pos: Vector, intersect_ray_direction: Vector, light_arr
                     final_color = final_color.clone() + c.clone();
                     final_color = final_color * s1;
 
-                    if 0f64 < closest_obj_color.special && closest_obj_color.special <= 1f64{
+                    if 0f32 < closest_obj_color.special && closest_obj_color.special <= 1f32{
                         let dot = closest_obj_normal.dot_product(&intersect_ray_direction.negative());
                         let scalar1 = &closest_obj_normal * dot;
                         let add1 = &scalar1 + &intersect_ray_direction;
-                        let scalar2 = &add1 * 2f64;
+                        let scalar2 = &add1 * 2f32;
                         let add2 = &intersect_ray_direction.negative() + &scalar2;
                         let reflect_direction = add2.normalize();
                         let mut specular = reflect_direction.dot_product(&light_direction);
                         
-                        if specular > 0f64{
+                        if specular > 0f32{
                             specular = specular.powi(10);
                             final_color = final_color + light.color.scale(specular*closest_obj_color.special)
                         }
@@ -250,7 +251,7 @@ fn color_at_py(intersect_pos: Vector, intersect_ray_direction: Vector, light_arr
 
 #[pyfunction]
 fn color_at(intersect_pos: PyObject, intersect_ray_direction: PyObject, scene_objects: Vec<PyObject>,
-    closest_obj_index: i32, lights: Vec<PyObject>, accuracy: f64, ambient: f64) -> PyResult<Color>{
+    closest_obj_index: i32, lights: Vec<PyObject>, accuracy: f32, ambient: f32) -> PyResult<Color>{
         let (intersect_pos, intersect_ray_direction, light_arr, scene_arr) = Python::with_gil(|py|{
             let intersect_pos = parse_vector(intersect_pos, &py);
             let intersect_ray_direction = parse_vector(intersect_ray_direction, &py);
@@ -284,10 +285,18 @@ fn color_at(intersect_pos: PyObject, intersect_ray_direction: PyObject, scene_ob
 #[pymodule]
 fn raytracer_rs(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(color_at, m)?)?;
+    m.add_class::<vector::Vector>()?;
+    m.add_class::<scene::Triangle>()?;
+    m.add_class::<color::Color>()?;
+    m.add_class::<ray::Ray>()?;
+    m.add_class::<scene::Plane>()?;
+    m.add_class::<raytrace::Raytrace>()?;
+    m.add_class::<light::Light>()?;
+    m.add_class::<scene::Scene>()?;
     Ok(())
 }
 
-fn closest_object_index(intersections: &Vec<f64>) -> isize {
+fn closest_object_index(intersections: &Vec<f32>) -> isize {
     let mut min_index = -1;
 
     if intersections.is_empty() {

@@ -4,37 +4,50 @@ use pyo3::prelude::*;
 #[pyclass]
 pub struct Color{
     #[pyo3(get, set)]
-    pub r: f64,
+    pub r: f32,
     #[pyo3(get, set)]
-    pub g: f64,
+    pub g: f32,
     #[pyo3(get, set)]
-    pub b: f64,
+    pub b: f32,
     #[pyo3(get, set)]
-    pub special: f64,
+    pub special: f32,
 }
 
 #[pymethods]
 impl Color {
     #[new]
-    pub fn new(r: f64, g: f64, b: f64, special: f64) -> Self {
-        Color { r, g, b, special }
+    pub fn new(r: Option<f32>, g: Option<f32>, b: Option<f32>, special: Option<f32>) -> Self {
+        let mut c = Color { r:0.5, g:0.5, b:0.5, special: 0.0};
+
+        if r.is_some(){
+            c.r = r.unwrap();
+        }
+        if g.is_some(){
+            c.g = g.unwrap();
+        }
+        if b.is_some(){
+            c.b = b.unwrap();
+        }
+        c
     }
 
     pub fn average(&self, other: Color) -> Color {
-        Color::new(
-            (self.r + other.r) / 2.0,
-            (self.g + other.g) / 2.0,
-            (self.b + other.b) / 2.0,
-            self.special,
-        )
+        Color{
+            r: (self.r + other.r) / 2.0,
+            g: (self.g + other.g) / 2.0,
+            b: (self.b + other.b) / 2.0,
+            special: self.special,
+        }
     }
 
-    pub fn brightness(&self) -> f64 {
+    pub fn brightness(&self) -> f32 {
         (self.r + self.g + self.b) / 3.0
     }
 
-    pub fn scale(&self, scalar: f64) -> Color {
-        Color::new(self.r * scalar, self.g * scalar, self.b * scalar, self.special)
+    pub fn scale(&self, scalar: f32) -> Color {
+        Color{
+            r: self.r * scalar, g: self.g * scalar, b: self.b * scalar, special: self.special
+        }
     }
 
     pub fn clip(&mut self) -> Color {
@@ -77,12 +90,12 @@ impl std::ops::Add<Color> for Color {
     type Output = Color;
 
     fn add(self, other: Color) -> Color {
-        Color::new(
-            self.r + other.r,
-            self.g + other.g,
-            self.b + other.b,
-            self.special,
-        )
+        Color{
+            r: self.r + other.r,
+            g: self.g + other.g,
+            b: self.b + other.b,
+            special: self.special,
+        }
     }
 }
 
@@ -90,11 +103,11 @@ impl std::ops::Mul<Color> for Color {
     type Output = Color;
 
     fn mul(self, other: Color) -> Color {
-        Color::new(
-            self.r * other.r,
-            self.g * other.g,
-            self.b * other.b,
-            self.special,
-        )
+        Color{
+            r: self.r * other.r,
+            g: self.g * other.g,
+            b: self.b * other.b,
+            special: self.special,
+        }
     }
 }
