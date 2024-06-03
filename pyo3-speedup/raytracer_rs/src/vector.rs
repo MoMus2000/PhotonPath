@@ -131,7 +131,7 @@ impl Vector{
 
     // Dot product
     pub fn dot_product(&self, other: &Vector) -> f32 {
-        self.x * other.x + self.y * other.y + self.z * other.z
+        (self.x * other.x as f32) + (self.y * other.y as f32) + (self.z * other.z as f32)
     }
 
     // Cross product

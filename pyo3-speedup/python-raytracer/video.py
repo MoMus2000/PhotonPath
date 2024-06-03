@@ -6,6 +6,8 @@ import ffmpeg  # Make sure ffmpeg is installed
 
 img_array = []
 
+FPS = 60
+
 def sorter(item):
 	items = item.split("_")
 	item = items[len(items)-1]
@@ -24,7 +26,7 @@ print(len(img_array))
 
 output_video_path = './images/ray_traced.mp4'
 
-out = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*'mp4v'), 10, size)
+out = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*'mp4v'), FPS, size)
 
 for i in tqdm(range(len(img_array))):
     out.write(img_array[i])

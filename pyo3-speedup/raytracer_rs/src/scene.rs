@@ -28,54 +28,38 @@ pub struct Triangle{
 #[pymethods]
 impl Triangle{
     #[new]
-    pub fn new(a_: Option<Vector>, b_: Option<Vector>, c_: Option<Vector>, color_: Option<Color>) -> Triangle{
+    pub fn new(a_: Option<Vector>, b_: Option<Vector>, c_: Option<Vector>, color_: Option<Color>) -> Triangle {
+        // Default values
+        let default_a = Vector { x: 1.00, y: 0.0, z: 0.0 };
+        let default_b = Vector { x: 0.00, y: 1.0, z: 0.0 };
+        let default_c = Vector { x: 0.00, y: 0.0, z: 1.0 };
+        let default_color = Color { r: 1.0, g: 1.0, b: 1.0, special: 0.0 };
 
-        let a = Vector{x:1.00, y:0.0, z:0.0}.clone();
-        let b = Vector{x:0.00, y:1.0, z:0.0}.clone();
-        let c = Vector{x:0.00, y:0.0, z:1.0}.clone();
-        let color = Color{r: 1.0, g: 1.0, b:1.0, special:0.0}.clone();
+        // Use provided values or defaults
+        let a = a_.unwrap_or(default_a);
+        let b = b_.unwrap_or(default_b);
+        let c = c_.unwrap_or(default_c);
+        let color = color_.unwrap_or(default_color);
 
+        // Calculate vectors and normal
         let ca = &c - &a;
         let ba = &b - &a;
-
         let normal = ca.cross_product(&ba).normalize();
-
         let distance = normal.dot_product(&a);
 
-        let mut t = Triangle{
-                                    a,
-                                    b,
-                                    c,
-                                    ca,
-                                    ba,
-                                    normal,
-                                    distance,
-                                    color
-                                };
-
-        if a_.is_some(){
-            t.a = a_.unwrap()
+        // Create and return the triangle
+        Triangle {
+            a,
+            b,
+            c,
+            ca,
+            ba,
+            normal,
+            distance,
+            color,
         }
-        else if b_.is_some(){
-            t.b = b_.unwrap()
-        }
-        else if c_.is_some(){
-            t.c = c_.unwrap()
-        }
-        else if color_.is_some(){
-            t.color = color_.unwrap()
-        }
-
-
-        t.ca = &t.c - &t.a;
-        t.ba = &t.b - &t.a;
-
-        t.normal = t.ca.cross_product(&t.ba).normalize();
-
-        t.distance = t.normal.dot_product(&t.a);
-
-        t
     }
+
 
     pub fn normal_at(&self) -> Vector{
         self.normal.clone()
@@ -84,7 +68,7 @@ impl Triangle{
     pub fn intersect(&self, ray: &Ray) -> f32 {
         let dot = ray.direction.dot_product(&self.normal);
 
-        if dot == 0.0 {
+        if dot == 0.0f32 {
             return -1.0;
         } else {
             let dum = &self.normal * self.distance;
@@ -162,7 +146,7 @@ impl Plane{
 
     pub fn intersect(&self, ray: &Ray) -> f32 {
         let dot = ray.direction.dot_product(&self.normal);
-        if dot == 0.0 {
+        if dot == 0.0f32 {
             -1.0
         } else {
             let inner = &(&self.normal * self.distance).negative();
@@ -176,7 +160,9 @@ impl Plane{
 #[derive(Clone)]
 #[pyclass]
 pub struct Scene{
+    #[pyo3(get, set)]
     pub triangle: Option<Triangle>,
+    #[pyo3(get, set)]
     pub plane: Option<Plane>
 }
 

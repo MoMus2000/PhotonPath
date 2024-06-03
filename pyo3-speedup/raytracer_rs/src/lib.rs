@@ -285,6 +285,7 @@ fn color_at(intersect_pos: PyObject, intersect_ray_direction: PyObject, scene_ob
 #[pymodule]
 fn raytracer_rs(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(color_at, m)?)?;
+    m.add_function(wrap_pyfunction!(raytrace::closest_object_index_1, m)?)?;
     m.add_class::<vector::Vector>()?;
     m.add_class::<scene::Triangle>()?;
     m.add_class::<color::Color>()?;

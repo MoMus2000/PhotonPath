@@ -15,8 +15,8 @@ start = time.time()
 print("TRACIN' DEM RAYS...")
 
 
-width = int(380)
-height = int(210)
+width = int(1920*0.20)
+height = int(1080*0.20)
 
 origin = Vector(0, 0, 0)
 unit_x = Vector(1, 0, 0)
@@ -126,7 +126,7 @@ def parse_obj_file(file_path):
 # Example usage
 i_ind = 1
 y_ind = 1
-for iter_num in range(0, 200):
+for iter_num in range(10, 200):
     if i_ind > 15:
         i_ind = 1
     # print(i_ind)
@@ -226,6 +226,11 @@ for iter_num in range(0, 200):
                         a = scene_objects[i].intersect(cam_ray)
                         intersections.append(a)
 
+
+                    # Looks like an issue in the triangle intersection
+                    # print(intersections[72])
+                    # print(scene_objects[72].triangle)
+
                     closest_obj_index = RayTracer.closest_object_index(intersections)
 
                     if closest_obj_index == -1:
@@ -241,7 +246,7 @@ for iter_num in range(0, 200):
                             intersection_color = RayTracer.color_at(intersect_pos, intersect_ray_direction,
                                                                     scene_objects, closest_obj_index, lights,
                                                                     accuracy, ambient)
-
+                            
                             temp_red[aa_index] = intersection_color.r
                             temp_green[aa_index] = intersection_color.g
                             temp_blue[aa_index] = intersection_color.b

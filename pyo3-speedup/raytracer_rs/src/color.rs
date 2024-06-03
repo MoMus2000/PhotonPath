@@ -31,6 +31,10 @@ impl Color {
         c
     }
 
+    pub fn __str__(&self) -> String{
+        format!("r = {} g = {} b = {} special = {}", self.r, self.g, self.b, self.special)
+    }
+
     pub fn average(&self, other: Color) -> Color {
         Color{
             r: (self.r + other.r) / 2.0,

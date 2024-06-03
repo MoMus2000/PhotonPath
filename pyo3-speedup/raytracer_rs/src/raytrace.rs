@@ -290,3 +290,35 @@ fn closest_object_index(intersections: &Vec<f32>) -> isize {
 
     min_index
 }
+
+#[pyfunction]
+pub fn closest_object_index_1(intersections: Vec<f32>) -> isize {
+    let mut min_index = -1;
+
+    if intersections.is_empty() {
+        return min_index;
+    } else if intersections.len() == 1 {
+        if intersections[0] > 0.0 {
+            min_index = 0;
+        }
+    }
+    else {
+        let mut max_val = 0.0;
+        for i in 0..intersections.len() {
+            if max_val < intersections[i] {
+                max_val = intersections[i];
+            }
+        }
+
+        if max_val > 0.0 {
+            for i in 0..intersections.len() {
+                if 0.0 < intersections[i] && intersections[i] <= max_val {
+                    max_val = intersections[i];
+                    min_index = i as isize;
+                }
+            }
+        }
+    }
+
+    min_index
+}
