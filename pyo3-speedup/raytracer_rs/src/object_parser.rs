@@ -5,7 +5,7 @@ use crate::color::Color;
 use crate::light::Light;
 use crate::scene::*;
 
-pub fn parse_vector(py_vec: PyObject, py: &Python) -> Vector{
+pub fn _parse_vector(py_vec: PyObject, py: &Python) -> Vector{
     let object_ref: &PyAny = py_vec.extract(*py).unwrap();
     Vector{
         x: object_ref.getattr("x").unwrap().extract::<f32>().unwrap(),
@@ -14,7 +14,7 @@ pub fn parse_vector(py_vec: PyObject, py: &Python) -> Vector{
     }
 }
 
-pub fn parse_light(py_light: &PyObject, py: &Python) -> Light{
+pub fn _parse_light(py_light: &PyObject, py: &Python) -> Light{
     let object_ref: &PyAny = py_light.extract(*py).unwrap();
     let v = Vector{
         x: object_ref.getattr("position").unwrap().getattr("x").unwrap().extract::<f32>().unwrap(),
@@ -33,7 +33,7 @@ pub fn parse_light(py_light: &PyObject, py: &Python) -> Light{
     }
 }
 
-fn parse_triangle(py_object: &PyObject, py: &Python) -> Triangle{
+fn _parse_triangle(py_object: &PyObject, py: &Python) -> Triangle{
     let object_ref: &PyAny = py_object.extract(*py).unwrap();
     let a = Vector{
         x: object_ref.getattr("a").unwrap().getattr("x").unwrap().extract::<f32>().unwrap(),
@@ -82,7 +82,7 @@ fn parse_triangle(py_object: &PyObject, py: &Python) -> Triangle{
 
 }
 
-fn parse_plane(py_object: &PyObject, py: &Python) -> Plane{
+fn _parse_plane(py_object: &PyObject, py: &Python) -> Plane{
     let object_ref: &PyAny = py_object.extract(*py).unwrap();
     let normal = Vector{
         x: object_ref.getattr("normal").unwrap().getattr("x").unwrap().extract::<f32>().unwrap(),
@@ -107,15 +107,15 @@ fn parse_plane(py_object: &PyObject, py: &Python) -> Plane{
 }
 
 
-pub fn parse_scene(py_object: &PyObject, py: &Python) -> Scene{
+pub fn _parse_scene(py_object: &PyObject, py: &Python) -> Scene{
     let obtype =  py_object.as_ref(*py).get_type().name().unwrap();
-    let mut scene = Scene{triangle: None, plane: None};
+    let mut scene = Scene{triangle: None, plane: None, sphere: None};
 
     if obtype == "Triangle"{
-        scene.triangle = Some(parse_triangle(py_object, py));
+        scene.triangle = Some(_parse_triangle(py_object, py));
     }
     else if obtype == "Plane" {
-        scene.plane = Some(parse_plane(py_object, py));
+        scene.plane = Some(_parse_plane(py_object, py));
     } 
 
     scene

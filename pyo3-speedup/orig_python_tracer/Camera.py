@@ -1,8 +1,6 @@
 __author__ = 'halileohalilei'
 
 from Vector3D import Vector3D
-# import raytracer_rs
-# from raytracer_rs import Vector
 
 
 class Camera:

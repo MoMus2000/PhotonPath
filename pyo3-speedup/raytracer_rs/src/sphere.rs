@@ -2,6 +2,7 @@ use pyo3::prelude::*;
 
 use crate::{color::Color, vector::Vector, ray::Ray};
 
+#[derive(Debug, Clone)]
 #[pyclass]
 pub struct Sphere{
     pub center: Vector,
@@ -20,7 +21,7 @@ impl Sphere{
         (point + &self.center.negative()).negative()
     }
 
-    fn intersect(&self, ray: &Ray) -> f32 {
+    pub fn intersect(&self, ray: &Ray) -> f32 {
         let ray_origin = &ray.origin;
         let ray_direction = &ray.direction;
 

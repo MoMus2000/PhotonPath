@@ -1,5 +1,6 @@
 use pyo3::prelude::*;
 use crate::color::Color;
+use crate::sphere::Sphere;
 use crate::vector::Vector;
 use crate::ray::Ray;
 
@@ -64,6 +65,7 @@ impl Triangle{
     pub fn normal_at(&self) -> Vector{
         self.normal.clone()
     }
+
 
     pub fn intersect(&self, ray: &Ray) -> f32 {
         let dot = ray.direction.dot_product(&self.normal);
@@ -163,19 +165,36 @@ pub struct Scene{
     #[pyo3(get, set)]
     pub triangle: Option<Triangle>,
     #[pyo3(get, set)]
-    pub plane: Option<Plane>
+    pub plane: Option<Plane>,
+    #[pyo3(get, set)]
+    pub sphere: Option<Sphere>
 }
 
 #[pymethods]
 impl Scene{
     #[new]
-    pub fn new(triangle: Option<Triangle>, plane: Option<Plane>) -> Scene{
-        Scene { triangle, plane }
+    pub fn new(triangle: Option<Triangle>, plane: Option<Plane>, sphere: Option<Sphere>) -> Scene{
+        Scene { triangle, plane, sphere }
+    }
+
+    pub fn normal_at(&self, ray: &Vector) -> Vector{
+        if self.triangle.is_some(){
+            self.triangle.as_ref().unwrap().normal_at()
+        }
+        else if self.sphere.is_some(){
+            self.sphere.as_ref().unwrap().normal_at(ray)
+        }
+        else{
+            self.plane.as_ref().unwrap().normal_at()
+        }
     }
 
     pub fn intersect(&self,ray: &Ray) -> f32{
         if self.triangle.is_some(){
             self.triangle.as_ref().unwrap().intersect(ray)
+        }
+        else if self.sphere.is_some(){
+            self.sphere.as_ref().unwrap().intersect(ray)
         }
         else{
             self.plane.as_ref().unwrap().intersect(ray)
@@ -184,8 +203,11 @@ impl Scene{
 
     #[getter]
     pub fn color(&self) -> Color{
-        if self.triangle.is_none(){
+        if self.triangle.is_some(){
             self.triangle.as_ref().unwrap().color.clone()
+        }
+        else if self.sphere.is_some(){
+            self.sphere.as_ref().unwrap().color.clone()
         }
         else{
             self.plane.as_ref().unwrap().color.clone()
