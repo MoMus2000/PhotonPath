@@ -1,4 +1,4 @@
-use pyo3::{prelude::*, wrap_pymodule};
+use pyo3::prelude::*;
 
 mod color;
 mod light;
@@ -7,6 +7,7 @@ mod vector;
 mod object_parser;
 mod ray;
 mod raytrace;
+mod sphere;
 
 use vector::Vector;
 use color::Color;
@@ -14,7 +15,6 @@ use light::Light;
 use object_parser::*;
 use scene::*;
 use ray::Ray;
-
 
 fn color_at_py(intersect_pos: Vector, intersect_ray_direction: Vector, light_arr: &Vec<Light>, scene_arr: &Vec<Scene>, closest_obj_index: i32, accuracy: f32, ambient: f32) -> Option<Color>{
     let mut sc = scene_arr.clone();
@@ -294,6 +294,7 @@ fn raytracer_rs(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<raytrace::Raytrace>()?;
     m.add_class::<light::Light>()?;
     m.add_class::<scene::Scene>()?;
+    m.add_class::<sphere::Sphere>()?;
     Ok(())
 }
 

@@ -5,7 +5,7 @@ from Ray import Ray
 import raytracer_rs
 from raytracer_rs import Raytrace
 
-def closest_object_test(intersections):
+def closest_object_index(intersections):
     min_index = -1
 
     if len(intersections) == 0:
@@ -27,13 +27,13 @@ def closest_object_test(intersections):
 
     return min_index
 
-def closest_object_index(intersections):
+# def closest_object_index(intersections):
 
-    # min_index = raytracer_rs.closest_object_index_1(intersections)
+#     # min_index = raytracer_rs.closest_object_index_1(intersections)
 
-    min_index = closest_object_test(intersections)
+#     min_index = closest_object_test(intersections)
 
-    return min_index
+#     return min_index
 
 
 def color_at(intersect_pos, intersect_ray_direction, scene_objects,

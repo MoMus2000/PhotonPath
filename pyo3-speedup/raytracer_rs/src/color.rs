@@ -28,8 +28,12 @@ impl Color {
         if b.is_some(){
             c.b = b.unwrap();
         }
+        if special.is_some(){
+            c.special = special.unwrap();
+        }
         c
     }
+
 
     pub fn __str__(&self) -> String{
         format!("r = {} g = {} b = {} special = {}", self.r, self.g, self.b, self.special)

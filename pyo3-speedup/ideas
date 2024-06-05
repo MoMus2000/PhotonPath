@@ -1,0 +1,5 @@
+0. Add rust code for rendering a sphere
+1. Offload all computation to rust
+2. Figure out why shadows don't appear
+3. compare performance with pypy3
+4. create flamegraphs to see what the performance bottlenecks are

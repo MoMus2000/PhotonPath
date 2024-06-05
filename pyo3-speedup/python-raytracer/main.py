@@ -1,7 +1,6 @@
 __author__ = 'halileohalilei'
 
 from PIL import Image
-from Sphere import Sphere
 from tqdm import tqdm
 import RayTracer
 import raytracer_rs
@@ -60,9 +59,6 @@ light2 = Light(Vector(5, 5, 5), yellow_light)
 light3 = Light(light_pos, white_light_2)
 lights = [light]
 
-sphere = Sphere(Vector(-4, 0.5, 0), 1, green)
-sphere2 = Sphere(sphere_center, 0.5, maroon)
-sphere3 = Sphere(Vector(-4, 2.5, 0), 1, blue)
 plane = Plane(unit_y, -8, green)
 sky = Plane(unit_y, 20, gray)
 

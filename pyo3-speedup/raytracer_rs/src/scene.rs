@@ -181,4 +181,14 @@ impl Scene{
             self.plane.as_ref().unwrap().intersect(ray)
         }
     }
+
+    #[getter]
+    pub fn color(&self) -> Color{
+        if self.triangle.is_none(){
+            self.triangle.as_ref().unwrap().color.clone()
+        }
+        else{
+            self.plane.as_ref().unwrap().color.clone()
+        }
+    }
 }

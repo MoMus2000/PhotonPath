@@ -19,5 +19,5 @@ class Plane:
             return -1
         else:
             dummy = self.normal.dot_product(ray.origin + (self.normal * self.distance).negative())
-            print(dummy)
+            # print(dummy)
             return -1 * dummy / dot

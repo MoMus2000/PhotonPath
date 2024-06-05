@@ -29,8 +29,8 @@ obj_file_path = './rolling-cube/1.obj'
 vertices, triangles = parse_obj_file(obj_file_path)
 
 # Display the parsed data
-print("Vertices:", vertices[1])
-print("Triangles:", triangles[1])
+# print("Vertices:", vertices[1])
+# print("Triangles:", triangles[1])
 
 triangle_objects = []
 for (i1, i2, i3, i4) in triangles:
@@ -52,4 +52,4 @@ for (i1, i2, i3, i4) in triangles:
     except Exception as e:
         print(e)
 
-print(triangle_objects[2])
+# print(triangle_objects[2])
