@@ -12,4 +12,3 @@ for i, file in enumerate(files):
 	arr = np.array(arr)
 	im = Image.fromarray((arr * 255).astype(np.uint8))
 	im.save(f"/Users/a./Desktop/ray/animated/test{i}.png")
-

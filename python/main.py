@@ -1,5 +1,4 @@
 from Color import Color
-from Image import Image
 from Point import Point
 from Sphere import Sphere
 from Scene import Scene
@@ -7,10 +6,8 @@ from RenderEngine import RenderEngine
 from Vector import Vector
 from Light import Light
 from Material import Material, ChequeredMaterial
-import os
 import time
-from multiprocessing import Pool,cpu_count, Process, Semaphore
-from PIL import Image as Im
+from multiprocessing import Pool,cpu_count
 # Render a 3d ball without shading
 
 # Ray tracing algorithm simplified and coded in the engine

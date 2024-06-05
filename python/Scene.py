@@ -5,4 +5,3 @@ class Scene:
 		self.width = width
 		self.lights= lights
 		self.height = height
-		
