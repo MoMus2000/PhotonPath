@@ -6,17 +6,17 @@ use std::ops::{Add, Sub, Mul};
 #[pyclass]
 pub struct Vector{
     #[pyo3(get, set)]
-    pub x: f32,
+    pub x: f64,
     #[pyo3(get, set)]
-    pub y: f32,
+    pub y: f64,
     #[pyo3(get, set)]
-    pub z: f32
+    pub z: f64
 }
 
 #[pymethods]
 impl Vector{
     #[new]
-    pub fn new(x: Option<f32>, y: Option<f32>, z: Option<f32>) -> Self{
+    pub fn new(x: Option<f64>, y: Option<f64>, z: Option<f64>) -> Self{
         let mut v = Vector { x: 0.0, y: 0.0, z: 0.0 };
         if x.is_some() {
             let x_val = x.unwrap();
@@ -53,7 +53,7 @@ impl Vector{
                     y: self.y - other_vec.y,
                     z: self.z - other_vec.z,
                 })
-            } else if let Ok(other_float) = other.extract::<f32>(py) {
+            } else if let Ok(other_float) = other.extract::<f64>(py) {
                 Ok(Vector {
                     x: self.x - other_float,
                     y: self.y - other_float,
@@ -75,7 +75,7 @@ impl Vector{
                     y: self.y + other_vec.y,
                     z: self.z + other_vec.z,
                 })
-            } else if let Ok(other_float) = other.extract::<f32>(py) {
+            } else if let Ok(other_float) = other.extract::<f64>(py) {
                 Ok(Vector {
                     x: self.x + other_float,
                     y: self.y + other_float,
@@ -97,7 +97,7 @@ impl Vector{
                     y: self.y * other_vec.y,
                     z: self.z * other_vec.z,
                 })
-            } else if let Ok(other_float) = other.extract::<f32>(py) {
+            } else if let Ok(other_float) = other.extract::<f64>(py) {
                 Ok(Vector {
                     x: self.x * other_float,
                     y: self.y * other_float,
@@ -125,13 +125,13 @@ impl Vector{
     }
 
     // Magnitude calculation
-    pub fn magnitude(&self) -> f32 {
+    pub fn magnitude(&self) -> f64 {
         (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }
 
     // Dot product
-    pub fn dot_product(&self, other: &Vector) -> f32 {
-        (self.x * other.x as f32) + (self.y * other.y as f32) + (self.z * other.z as f32)
+    pub fn dot_product(&self, other: &Vector) -> f64 {
+        (self.x * other.x as f64) + (self.y * other.y as f64) + (self.z * other.z as f64)
     }
 
     // Cross product
@@ -182,11 +182,11 @@ impl Mul<&Vector> for &Vector {
     }
 }
 
-impl Mul<f32> for &Vector {
+impl Mul<f64> for &Vector {
     type Output = Vector;
 
     // Implementing the subtraction operation for references to Vector
-    fn mul(self, other: f32) -> Vector {
+    fn mul(self, other: f64) -> Vector {
         Vector {
             x: self.x * other,
             y: self.y * other,
@@ -208,11 +208,11 @@ impl Add<&Vector> for &Vector {
     }
 }
 
-impl Add<f32> for &Vector {
+impl Add<f64> for &Vector {
     type Output = Vector;
 
     // Implementing the subtraction operation for references to Vector
-    fn add(self, other: f32) -> Vector {
+    fn add(self, other: f64) -> Vector {
         Vector {
             x: self.x * other,
             y: self.y * other,

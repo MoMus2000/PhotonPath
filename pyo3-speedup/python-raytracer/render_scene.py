@@ -15,7 +15,7 @@ faulthandler.enable()
 start = time.time()
 print("TRACIN' DEM RAYS...")
 
-filename = "test_img4.png"
+filename = "test_img5.png"
 
 width = int(640*2)
 height = int(480*2)

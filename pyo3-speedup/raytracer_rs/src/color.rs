@@ -4,19 +4,19 @@ use pyo3::prelude::*;
 #[pyclass]
 pub struct Color{
     #[pyo3(get, set)]
-    pub r: f32,
+    pub r: f64,
     #[pyo3(get, set)]
-    pub g: f32,
+    pub g: f64,
     #[pyo3(get, set)]
-    pub b: f32,
+    pub b: f64,
     #[pyo3(get, set)]
-    pub special: f32,
+    pub special: f64,
 }
 
 #[pymethods]
 impl Color {
     #[new]
-    pub fn new(r: Option<f32>, g: Option<f32>, b: Option<f32>, special: Option<f32>) -> Self {
+    pub fn new(r: Option<f64>, g: Option<f64>, b: Option<f64>, special: Option<f64>) -> Self {
         let mut c = Color { r:0.5, g:0.5, b:0.5, special: 0.0};
 
         if r.is_some(){
@@ -48,11 +48,11 @@ impl Color {
         }
     }
 
-    pub fn brightness(&self) -> f32 {
+    pub fn brightness(&self) -> f64 {
         (self.r + self.g + self.b) / 3.0
     }
 
-    pub fn scale(&self, scalar: f32) -> Color {
+    pub fn scale(&self, scalar: f64) -> Color {
         Color{
             r: self.r * scalar, g: self.g * scalar, b: self.b * scalar, special: self.special
         }

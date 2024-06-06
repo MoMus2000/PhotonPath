@@ -8,7 +8,7 @@ pub struct Sphere{
     #[pyo3(get, set)]
     pub center: Vector,
     #[pyo3(get, set)]
-    pub radius: f32,
+    pub radius: f64,
     #[pyo3(get, set)]
     pub color: Color
 }
@@ -16,7 +16,7 @@ pub struct Sphere{
 #[pymethods]
 impl Sphere{
     #[new]
-    pub fn new(center: Vector, radius: f32, color: Color) -> Sphere{
+    pub fn new(center: Vector, radius: f64, color: Color) -> Sphere{
         Sphere { center, radius, color }
     }
 
@@ -24,7 +24,7 @@ impl Sphere{
         (point + &self.center.negative()).normalize().clone()
     }
 
-    pub fn intersect(&self, ray: &Ray) -> f32 {
+    pub fn intersect(&self, ray: &Ray) -> f64 {
         let ray_origin = &ray.origin;
         let ray_direction = &ray.direction;
 

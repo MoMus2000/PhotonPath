@@ -20,7 +20,7 @@ pub struct Triangle{
     #[pyo3(get, set)]
     pub normal: Vector,
     #[pyo3(get, set)]
-    pub distance: f32,
+    pub distance: f64,
     #[pyo3(get, set)]
     pub color: Color
 }
@@ -67,10 +67,10 @@ impl Triangle{
     }
 
 
-    pub fn intersect(&self, ray: &Ray) -> f32 {
+    pub fn intersect(&self, ray: &Ray) -> f64 {
         let dot = ray.direction.dot_product(&self.normal);
 
-        if dot == 0.0f32 {
+        if dot == 0.0f64 {
             return -1.0;
         } else {
             let dum = &self.normal * self.distance;
@@ -110,7 +110,7 @@ pub struct Plane{
     #[pyo3(get, set)]
     pub normal: Vector,
     #[pyo3(get, set)]
-    pub distance: f32,
+    pub distance: f64,
     #[pyo3(get, set)]
     pub color: Color
 }
@@ -118,7 +118,7 @@ pub struct Plane{
 #[pymethods]
 impl Plane{
     #[new]
-    pub fn new(normal: Option<Vector>, distance: Option<f32>, color: Option<Color>) -> Self{
+    pub fn new(normal: Option<Vector>, distance: Option<f64>, color: Option<Color>) -> Self{
         let  norm = Vector::new(None, None, None);
         let  dist = 0.0;
         let colo = Color{r: 0.5, g: 0.5, b:0.5, special:0.0}.clone();
@@ -146,9 +146,9 @@ impl Plane{
         self.normal.clone()
     }
 
-    pub fn intersect(&self, ray: &Ray) -> f32 {
+    pub fn intersect(&self, ray: &Ray) -> f64 {
         let dot = ray.direction.dot_product(&self.normal);
-        if dot == 0.0f32 {
+        if dot == 0.0f64 {
             -1.0
         } else {
             let inner = &(&self.normal * self.distance).negative();
@@ -189,7 +189,7 @@ impl Scene{
         }
     }
 
-    pub fn intersect(&self,ray: &Ray) -> f32{
+    pub fn intersect(&self,ray: &Ray) -> f64{
         if self.triangle.is_some(){
             self.triangle.as_ref().unwrap().intersect(ray)
         }

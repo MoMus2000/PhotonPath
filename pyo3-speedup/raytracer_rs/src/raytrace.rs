@@ -25,7 +25,7 @@ impl Raytrace{
     }
 
     pub fn color_at_py(&self, intersect_pos: Vector, intersect_ray_direction: Vector, light_arr: Vec<Light>, scene_arr: Vec<Scene>,
-         closest_obj_index: i32, accuracy: f32, ambient: f32, depth: f32, mut final_color: Color) -> Option<Color>{
+         closest_obj_index: i32, accuracy: f64, ambient: f64, depth: f64, mut final_color: Color) -> Option<Color>{
             if depth > 100.0 {
                 return Some(final_color)
             }
@@ -36,30 +36,30 @@ impl Raytrace{
         let closest_obj_normal = scene.normal_at(&intersect_pos).clone();
         let mut closest_obj_color : Color = scene.color();
 
-        if closest_obj_color.special == 2f32{
+        if closest_obj_color.special == 2f64{
             let square = (intersect_pos.x.floor() + intersect_pos.z.floor()) as i32;
             if square % 2 == 0{
-                closest_obj_color.r = 0f32;
-                closest_obj_color.g = 0f32;
-                closest_obj_color.b = 0f32;
+                closest_obj_color.r = 0f64;
+                closest_obj_color.g = 0f64;
+                closest_obj_color.b = 0f64;
             }
             else{
-                closest_obj_color.r = 1f32;
-                closest_obj_color.g = 1f32;
-                closest_obj_color.b = 1f32;
+                closest_obj_color.r = 1f64;
+                closest_obj_color.g = 1f64;
+                closest_obj_color.b = 1f64;
             }
         }
         final_color = closest_obj_color.scale(ambient).clone();
-        if 0f32 < closest_obj_color.special &&
-            closest_obj_color.special <= 1f32 {
+        if 0f64 < closest_obj_color.special &&
+            closest_obj_color.special <= 1f64 {
             let dot = closest_obj_normal.dot_product(&intersect_ray_direction.negative());
             let scalar1 = &closest_obj_normal * dot;
             let add1 = &scalar1 + &intersect_ray_direction;
-            let scalar2 = &add1 * 2f32;
+            let scalar2 = &add1 * 2f64;
             let add2 = &intersect_ray_direction.negative() + &scalar2;
             let reflect_direction = add2.normalize();
             let reflection_ray = Ray{origin: intersect_pos.clone(), direction: reflect_direction.clone()};
-            let mut reflect_intersections= Vec::<f32>::new();
+            let mut reflect_intersections= Vec::<f64>::new();
             
             for scene in &scene_arr{
                     let t = scene.intersect(&reflection_ray);
@@ -100,11 +100,11 @@ impl Raytrace{
             let light_direction = (&light.position + &intersect_pos.negative()).normalize();
             let cos = closest_obj_normal.dot_product(&light_direction);
             
-            if cos > 0f32{
+            if cos > 0f64{
                 let mut shadowed = false;
                 let dist_to_light = (&light.position + &intersect_pos.negative()).magnitude();
                 let shadow_ray = Ray{origin: intersect_pos.clone(), direction:light_direction.clone()};
-                let mut secondary_intersects = Vec::<f32>::new();
+                let mut secondary_intersects = Vec::<f64>::new();
                 
                 for j in &scene_arr{
                     if shadowed{
@@ -127,16 +127,16 @@ impl Raytrace{
                     let c = &closest_obj_color;
                     final_color = final_color.clone() + c.clone() * s1;
 
-                    if 0f32 < closest_obj_color.special && closest_obj_color.special <= 1f32{
+                    if 0f64 < closest_obj_color.special && closest_obj_color.special <= 1f64{
                         let dot = closest_obj_normal.dot_product(&intersect_ray_direction.negative());
                         let scalar1 = &closest_obj_normal * dot;
                         let add1 = &scalar1 + &intersect_ray_direction;
-                        let scalar2 = &add1 * 2f32;
+                        let scalar2 = &add1 * 2f64;
                         let add2 = &intersect_ray_direction.negative() + &scalar2;
                         let reflect_direction = add2.normalize();
                         let specular = reflect_direction.dot_product(&light_direction);
                         
-                        if specular > 0f32{
+                        if specular > 0f64{
                             final_color = final_color + light.color.scale(specular*closest_obj_color.special)
                         }
                     }
@@ -150,7 +150,7 @@ impl Raytrace{
 
 }
 
-fn closest_object_index(intersections: &Vec<f32>) -> isize {
+fn closest_object_index(intersections: &Vec<f64>) -> isize {
     let mut min_index = -1;
 
     if intersections.is_empty() {
