@@ -1,7 +1,7 @@
 __author__ = 'halileohalilei'
 
 import raytracer_rs
-from raytracer_rs import Raytrace
+from raytracer_rs import Raytrace, Color
 
 def closest_object_index(intersections):
     min_index = -1
@@ -32,7 +32,7 @@ def color_at(intersect_pos, intersect_ray_direction, scene_objects,
     rt = Raytrace()
 
     result = rt.color_at_py(intersect_pos, intersect_ray_direction, lights,
-             scene_objects, closest_obj_index, accuracy, ambient)
+             scene_objects, closest_obj_index, accuracy, ambient, 0, Color(0.5, 0.25, 0.25, 0.1))
 
 
     return result

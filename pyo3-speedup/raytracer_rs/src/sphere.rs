@@ -5,20 +5,23 @@ use crate::{color::Color, vector::Vector, ray::Ray};
 #[derive(Debug, Clone)]
 #[pyclass]
 pub struct Sphere{
+    #[pyo3(get, set)]
     pub center: Vector,
+    #[pyo3(get, set)]
     pub radius: f32,
+    #[pyo3(get, set)]
     pub color: Color
 }
 
 #[pymethods]
 impl Sphere{
     #[new]
-    pub fn new(center: Vector, radius: f32, color: Color) -> Self{
+    pub fn new(center: Vector, radius: f32, color: Color) -> Sphere{
         Sphere { center, radius, color }
     }
 
     pub fn normal_at(&self, point: &Vector) -> Vector{
-        (point + &self.center.negative()).negative()
+        (point + &self.center.negative()).normalize().clone()
     }
 
     pub fn intersect(&self, ray: &Ray) -> f32 {
@@ -37,11 +40,11 @@ impl Sphere{
         let discriminant = b * b - 4.0 * a * c;
 
         if discriminant >= 0.0 {
-            let first_root = (-b - discriminant.sqrt()) / (2.0 * a) - 0.000001;
+            let first_root = (-1.0 * b - discriminant.sqrt()) / 2.0  - 0.000001;
             if first_root > 0.0 {
                 return first_root;
             } else {
-                let second_root = (-b + discriminant.sqrt()) / (2.0 * a) - 0.000001;
+                let second_root = (-1.0 * b + discriminant.sqrt()) / 2.0 - 0.000001;
                 return second_root;
             }
         } else {

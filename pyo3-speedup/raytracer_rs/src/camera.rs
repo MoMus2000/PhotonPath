@@ -20,10 +20,18 @@ impl Camera{
     pub fn new(position: Option<Vector>, direction: Option<Vector>,
          right: Option<Vector>, down: Option<Vector>) -> Self{
         let mut cam = Camera{
-            position: Vector::new(Some(0.0), Some(0.0), Some(0.0)),
-            direction: Vector::new(Some(0.0), Some(0.0), Some(1.0)),
-            right: Vector::new(Some(0.0), Some(0.0), Some(0.0)),
-            down: Vector::new(Some(0.0), Some(0.0), Some(0.0))
+            position: Vector{
+                x: 0.0, y:0.0, z:0.0
+            },
+            direction: Vector{
+                x: 0.0, y:0.0, z:1.0
+            },
+            right: Vector{
+                x: 0.0, y:0.0, z:0.0
+            },
+            down: Vector{
+                x: 0.0, y:0.0, z:0.0
+            },
         };
 
         if position.is_some(){

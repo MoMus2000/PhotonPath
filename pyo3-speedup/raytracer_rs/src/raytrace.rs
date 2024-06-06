@@ -24,11 +24,18 @@ impl Raytrace{
         Raytrace{}
     }
 
-    pub fn color_at_py(&self, intersect_pos: Vector, intersect_ray_direction: Vector, light_arr: Vec<Light>, scene_arr: Vec<Scene>, closest_obj_index: i32, accuracy: f32, ambient: f32) -> Option<Color>{
-        let mut sc = scene_arr.clone();
-        let scene: &mut Scene = sc.get_mut(closest_obj_index as usize).unwrap();
+    pub fn color_at_py(&self, intersect_pos: Vector, intersect_ray_direction: Vector, light_arr: Vec<Light>, scene_arr: Vec<Scene>,
+         closest_obj_index: i32, accuracy: f32, ambient: f32, depth: f32, mut final_color: Color) -> Option<Color>{
+            if depth > 100.0 {
+                return Some(final_color)
+            }
+        let scene: &Scene = match scene_arr.get(closest_obj_index as usize) {
+            Some(scene_ref) => scene_ref,
+            None => return None
+        };
         let closest_obj_normal = scene.normal_at(&intersect_pos).clone();
-        let closest_obj_color : &mut Color = &mut scene.color();
+        let mut closest_obj_color : Color = scene.color();
+
         if closest_obj_color.special == 2f32{
             let square = (intersect_pos.x.floor() + intersect_pos.z.floor()) as i32;
             if square % 2 == 0{
@@ -42,8 +49,9 @@ impl Raytrace{
                 closest_obj_color.b = 1f32;
             }
         }
-        let mut final_color = closest_obj_color.scale(ambient);
-        if closest_obj_color.special < 0f32{
+        final_color = closest_obj_color.scale(ambient).clone();
+        if 0f32 < closest_obj_color.special &&
+            closest_obj_color.special <= 1f32 {
             let dot = closest_obj_normal.dot_product(&intersect_ray_direction.negative());
             let scalar1 = &closest_obj_normal * dot;
             let add1 = &scalar1 + &intersect_ray_direction;
@@ -53,33 +61,40 @@ impl Raytrace{
             let reflection_ray = Ray{origin: intersect_pos.clone(), direction: reflect_direction.clone()};
             let mut reflect_intersections= Vec::<f32>::new();
             
-            let sc = scene_arr.clone();
-            
-            for scene in &sc{
+            for scene in &scene_arr{
                     let t = scene.intersect(&reflection_ray);
                     reflect_intersections.push(t);
             }
-            
+
             let index_closest_with_reflection = closest_object_index(&reflect_intersections);
-            let index_closest_w_r = index_closest_with_reflection.clone();
-            
-            let acc = reflect_intersections.get(index_closest_w_r as usize).unwrap();
-            
-            if index_closest_with_reflection != -1 && acc > &accuracy {
-                let inner = &reflect_direction *
-                *(reflect_intersections.get(index_closest_with_reflection as usize).unwrap());
-                let reflect_intersection_pos = &intersect_pos + &inner;
-                let reflect_intersection_ray_direction = reflect_direction;
-                
-                let reflect_intersection_color = self.color_at_py(
-                    reflect_intersection_pos, reflect_intersection_ray_direction,
-                    light_arr.clone(), scene_arr.clone(),
-                    closest_obj_index, accuracy, ambient).unwrap();
+
+
+            if index_closest_with_reflection != -1{
+                let acc = reflect_intersections
+                    .get(index_closest_with_reflection as usize)
+                    .unwrap_or_else(|| panic!("Failed to get element at index {}", index_closest_with_reflection));
+                if *acc > accuracy {
+                    let inner = &reflect_direction *
+                    *(reflect_intersections.get(index_closest_with_reflection as usize).expect("NO"));
+                    let reflect_intersection_pos = &intersect_pos + &inner;
+                    let reflect_intersection_ray_direction = reflect_direction;
                     
-                    final_color = final_color.clone() + reflect_intersection_color.scale(closest_obj_color.special);
+                    let reflect_intersection_color = self.color_at_py(
+                        reflect_intersection_pos.clone(), reflect_intersection_ray_direction.clone(),
+                        light_arr.clone(), scene_arr.clone(),
+                        index_closest_with_reflection.clone() as i32, accuracy.clone(), ambient.clone(), depth+1.0, final_color.clone());
                     
+
+                    match reflect_intersection_color{
+                        Some(res) => {
+                            final_color = final_color + res.scale(closest_obj_color.special);
+                        }
+                        None => {
+                            // println!("None")
+                        }
+                    }
                 }
-                
+            }
         }
         for light in light_arr{
             let light_direction = (&light.position + &intersect_pos.negative()).normalize();
@@ -109,7 +124,7 @@ impl Raytrace{
                 }
                 if !shadowed{
                     let s1 = light.color.scale(cos);
-                    let c : &Color = closest_obj_color;
+                    let c = &closest_obj_color;
                     final_color = final_color.clone() + c.clone() * s1;
 
                     if 0f32 < closest_obj_color.special && closest_obj_color.special <= 1f32{
@@ -128,7 +143,7 @@ impl Raytrace{
                 }
             }
         }
-        return Some(final_color.clip());
+        return Some(final_color.clip())
     }
 
 
@@ -144,7 +159,8 @@ fn closest_object_index(intersections: &Vec<f32>) -> isize {
         if intersections[0] > 0.0 {
             min_index = 0;
         }
-    } else {
+    }
+    else {
         let mut max_val = 0.0;
         for i in 0..intersections.len() {
             if max_val < intersections[i] {

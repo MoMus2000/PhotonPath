@@ -4,8 +4,8 @@ from PIL import Image
 from tqdm import tqdm
 import RayTracer
 import raytracer_rs
-from raytracer_rs import Vector, Triangle, Color, Ray, Plane, Light, Scene
-from Camera import Camera
+from raytracer_rs import Vector, Triangle, Color, Ray, Plane, Light, Scene, Camera
+# from Camera import Camera
 
 import time
 import copy
@@ -28,7 +28,7 @@ aspect_ratio = float(width)/float(height)
 ambient = 0.3
 accuracy = 0.00000001
 
-sphere_center = Vector(3, -0.5, 0)
+# sphere_center = Vector(3, -0.5, 0)
 
 cam_position = Vector(5, 2.5, 10)
 

@@ -4,7 +4,7 @@ use crate::sphere::Sphere;
 use crate::vector::Vector;
 use crate::ray::Ray;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[pyclass]
 pub struct Triangle{
     #[pyo3(get, set)]
@@ -104,7 +104,7 @@ impl Triangle{
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[pyclass]
 pub struct Plane{
     #[pyo3(get, set)]
@@ -159,7 +159,7 @@ impl Plane{
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[pyclass]
 pub struct Scene{
     #[pyo3(get, set)]

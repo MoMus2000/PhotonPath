@@ -5,18 +5,20 @@ import RayTracer
 from tqdm import tqdm
 from raytracer_rs import Vector, Triangle, Color, Ray, Plane, Light, Scene, Sphere, Camera
 
-
 import time
 import copy
 
+import faulthandler
+
+faulthandler.enable()
 
 start = time.time()
 print("TRACIN' DEM RAYS...")
 
 filename = "test_img4.png"
 
-width = 640*2
-height = 480*2
+width = int(640*2)
+height = int(480*2)
 
 origin = Vector(0, 0, 0)
 unit_x = Vector(1, 0, 0)
@@ -81,7 +83,7 @@ scene_objects = [
 
 image = Image.new("RGB", (width, height))
 
-for x in range(0, width):
+for x in tqdm(range(0, width)):
     for y in range(0, height):
         temp_red = [None] * aa_depth * aa_depth
         temp_green = [None] * aa_depth * aa_depth
@@ -122,23 +124,15 @@ for x in range(0, width):
                                      cam_right * (xamnt - 0.5) +
                                      cam_down * (yamnt - 0.5)).normalize()
 
-                # print("CAM ORIGIN: ", cam_ray_origin)
-                # print("CAM direction: ", cam_ray_direction)
-
                 cam_ray = Ray(cam_ray_origin, cam_ray_direction)
 
-                # print("CAM RAY", cam_ray.origin)
-                # print("CAM RAY", cam_ray.direction)
 
                 intersections = []
                 for i in range(0, len(scene_objects)):
                     intersections.append(scene_objects[i].intersect(cam_ray))
 
-                # print(intersections)
-
                 closest_obj_index = RayTracer.closest_object_index(intersections)
 
-                # print(closest_obj_index)
 
                 if closest_obj_index == -1:
                     temp_red[aa_index] = 0
@@ -152,12 +146,7 @@ for x in range(0, width):
                         intersection_color = RayTracer.color_at(intersect_pos, intersect_ray_direction,
                                                                 scene_objects, closest_obj_index, lights,
                                                                 accuracy, ambient)
-
-                        # print(intersection_color.r)
-                        # print(intersection_color.g)
-                        # print(intersection_color.b)
-                        # print(intersection_color.special)
-
+                        
                         temp_red[aa_index] = intersection_color.r
                         temp_green[aa_index] = intersection_color.g
                         temp_blue[aa_index] = intersection_color.b
