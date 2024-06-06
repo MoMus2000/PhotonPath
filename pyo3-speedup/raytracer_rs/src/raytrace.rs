@@ -12,6 +12,8 @@ use scene::*;
 use color::Color;
 use ray::Ray;
 
+const DEPTH : f64 = 3.0;
+
 
 #[pyclass]
 pub struct Raytrace;
@@ -26,7 +28,7 @@ impl Raytrace{
 
     pub fn color_at_py(&self, intersect_pos: Vector, intersect_ray_direction: Vector, light_arr: Vec<Light>, scene_arr: Vec<Scene>,
          closest_obj_index: i32, accuracy: f64, ambient: f64, depth: f64, mut final_color: Color) -> Option<Color>{
-            if depth > 100.0 {
+            if depth > DEPTH {
                 return Some(final_color)
             }
         let scene: &Scene = match scene_arr.get(closest_obj_index as usize) {

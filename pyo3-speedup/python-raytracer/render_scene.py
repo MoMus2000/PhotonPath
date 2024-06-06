@@ -8,17 +8,13 @@ from raytracer_rs import Vector, Triangle, Color, Ray, Plane, Light, Scene, Sphe
 import time
 import copy
 
-import faulthandler
-
-faulthandler.enable()
-
 start = time.time()
 print("TRACIN' DEM RAYS...")
 
 filename = "test_img5.png"
 
-width = int(640*2)
-height = int(480*2)
+width = int(640)
+height = int(480)
 
 origin = Vector(0, 0, 0)
 unit_x = Vector(1, 0, 0)
@@ -46,6 +42,7 @@ camera = Camera(cam_position, cam_direction, cam_right, cam_down)
 
 white_light = Color(1.0, 1.0, 1.0, 0)
 yellow_light = Color(1.0, 1.0, 0.25, 0)
+red_light = Color(1.0, 0.0, 0.0, 0)
 green = Color(0.5, 1.0, 0.5, 0.3)
 maroon = Color(0.5, 0.25, 0.25, 0.1)
 tile_floor = Color(1, 1, 1, 2)
@@ -55,15 +52,19 @@ black = Color(0.0, 0.0, 0.0, 0)
 blue = Color(0.2, 0.2, 1, 0.1)
 reflective_black = Color(0.0, 0.0, 0.0, 0.3)
 
-light_pos = Vector(0, 5, 10)
-light = Light(light_pos, white_light)
+light_pos = Vector(0, 5, 0)
+light_pos = Vector(0, 9, 0)
+light = Light(light_pos, red_light)
 light2 = Light(Vector(5, 5, 5), yellow_light)
 lights = [light, light2]
 
 sphere = Sphere(origin, 1, green)
 sphere2 = Sphere(sphere_center, 0.5, maroon)
+sphere_centerx = Vector(4, -0.5, 0)
+spherex = Sphere(sphere_centerx, 0.5, maroon)
 sphere3 = Sphere(Vector(0, 2, 0), 1, blue)
 plane = Plane(unit_y, -1, tile_floor)
+sky = Plane(unit_y, 10, tile_floor)
 
 triangle = Triangle(Vector(3, 4, -3), Vector(3, -1, -3),Vector(-3, -1, -3), orange)
 triangle2 = Triangle(Vector(3, 4, -3), Vector(-3, -1, -3), Vector(-3, 4, -3), orange)
@@ -72,13 +73,11 @@ triangle4 = Triangle(Vector(-3, -1, 3), Vector(-3, 4, 3), Vector(-3, 4, -3), ora
 
 scene_objects = [
     Scene(None, None, sphere), 
+    Scene(None, None, spherex), 
     Scene(None, None, sphere2),
     Scene(None, None, sphere3),
     Scene(None, plane, None),
-    Scene(triangle, None, None),
-    Scene(triangle2, None, None),
-    Scene(triangle3, None, None),
-    Scene(triangle4, None, None)
+    Scene(None, sky, None),
 ]
 
 image = Image.new("RGB", (width, height))

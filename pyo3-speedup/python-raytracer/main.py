@@ -5,7 +5,6 @@ from tqdm import tqdm
 import RayTracer
 import raytracer_rs
 from raytracer_rs import Vector, Triangle, Color, Ray, Plane, Light, Scene, Camera
-# from Camera import Camera
 
 import time
 import copy
@@ -14,8 +13,8 @@ start = time.time()
 print("TRACIN' DEM RAYS...")
 
 
-width = int(1920*0.20)
-height = int(1080*0.20)
+width = int(640*2)
+height = int(480*2)
 
 origin = Vector(0, 0, 0)
 unit_x = Vector(1, 0, 0)
