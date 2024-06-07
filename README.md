@@ -8,6 +8,8 @@ Update:
 
 Successfully ported Raytracing logic to rust with measurable reduction in rendering time.
 
+# Click the thumnail to open video
+
 ## PyPy3 Rendering
 
 [![Watch Video](https://i.imgur.com/Ma5RuwH.jpg)](https://youtu.be/B_RVcWMuhvg)
