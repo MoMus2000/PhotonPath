@@ -8,7 +8,11 @@ Update:
 
 Successfully ported Raytracing logic to rust with measurable reduction in rendering time.
 
+## PyPy3 Rendering
+
 [![Watch Video](https://i.imgur.com/Ma5RuwH.jpg)](https://youtu.be/B_RVcWMuhvg)
+
+## PyO3 - Rust Bindings
 
 [![Rust-PyO3](https://i.imgur.com/BNXYaUE.png)](https://youtu.be/kllB_22QUcA)
 
