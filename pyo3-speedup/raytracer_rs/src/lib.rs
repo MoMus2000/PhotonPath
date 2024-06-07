@@ -9,6 +9,7 @@ mod ray;
 mod raytrace;
 mod sphere;
 mod camera;
+mod render_scene;
 
 
 /// A Python module implemented in Rust.
@@ -24,5 +25,6 @@ fn raytracer_rs(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<scene::Scene>()?;
     m.add_class::<sphere::Sphere>()?;
     m.add_class::<camera::Camera>()?;
+    m.add_class::<render_scene::RenderScene>()?;
     Ok(())
 }

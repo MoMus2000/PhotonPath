@@ -152,7 +152,7 @@ impl Raytrace{
 
 }
 
-fn closest_object_index(intersections: &Vec<f64>) -> isize {
+pub fn closest_object_index(intersections: &Vec<f64>) -> isize {
     let mut min_index = -1;
 
     if intersections.is_empty() {

@@ -2,16 +2,17 @@ use pyo3::prelude::*;
 use crate::vector::Vector;
 
 
+#[derive(Clone)]
 #[pyclass]
 pub struct Camera{
     #[pyo3(get, set)]
-    position: Vector,
+    pub position: Vector,
     #[pyo3(get, set)]
-    direction: Vector,
+    pub direction: Vector,
     #[pyo3(get, set)]
-    right: Vector,
+    pub right: Vector,
     #[pyo3(get, set)]
-    down: Vector
+    pub down: Vector
 }
 
 #[pymethods]
