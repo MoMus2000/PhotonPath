@@ -6,6 +6,8 @@ use crate::light::Light;
 use crate::ray::Ray;
 use crate::raytrace::{Raytrace, self};
 use crate::color::Color;
+use crate::rt_image::Image;
+use indicatif::{ProgressBar, ProgressStyle};
 
 const AA_DEPTH: i32 = 1;
 
@@ -156,11 +158,21 @@ impl RenderScene{
         result
     }
 
+    #[staticmethod]
     // Do polling, generator pattern
-    pub fn par_render(&self, render_scenes: Vec<RenderScene>) {
+    pub fn par_render(render_scenes: Vec<RenderScene>, width: i32, height: i32) {
+        let pb = ProgressBar::new(render_scenes.len() as u64);
+        pb.set_style(ProgressStyle::default_bar()
+        .template("[{elapsed_precise}] {wide_bar} {percent}%").unwrap()
+        .progress_chars("█▉▊▋▌▍▎▏  "));
+
         (0 .. render_scenes.len()).into_par_iter().for_each(|i|{
-            render_scenes[i].render();
+            let img_vec = render_scenes[i].render();
+            let file_name = format!("/Users/mmuhammad/Desktop/projects/ray-tracer/pyo3-speedup/python-raytracer/images/rs_{}.png",i);
+            let img = Image::new(file_name, img_vec, width as u32, height as u32);
+            img.convert_to_image();
+            pb.inc(1);
         });
     }
-
 }
+    

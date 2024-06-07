@@ -10,6 +10,7 @@ mod raytrace;
 mod sphere;
 mod camera;
 mod render_scene;
+mod rt_image;
 
 
 /// A Python module implemented in Rust.

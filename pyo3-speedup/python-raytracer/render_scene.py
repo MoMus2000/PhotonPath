@@ -5,6 +5,7 @@ import RayTracer
 from tqdm import tqdm
 import numpy as np
 from raytracer_rs import Vector, Triangle, Color, Ray, Plane, Light, Scene, Sphere, Camera, RenderScene
+import raytracer_rs
 
 import time
 import copy
@@ -12,8 +13,8 @@ import copy
 start = time.time()
 print("TRACIN' DEM RAYS...")
 
-width = int(640*2)
-height = int(480*2)
+width = int(640)
+height = int(480)
 
 origin = Vector(0, 0, 0)
 unit_x = Vector(1, 0, 0)
@@ -78,46 +79,51 @@ scene_objects = [
 image = Image.new("RGB", (width, height))
 
 o_count = 0
-for i in tqdm(range(0, 5)):
-    sub = np.linspace(i, i+1, 60)
+
+render_objects = []
+
+for i in range(0, 2):
+    sub = np.linspace(i, i+1, 120)
     for idx, val in enumerate(sub):
         renderer = RenderScene(scene_objects,camera,lights, width, height, ambient, accuracy)
-        img_colors = renderer.render()
-        count = 0 
-        for x in range(0, width):
-            for y in range(0, height):
-
-                color = img_colors[count]
-                count += 1
-
-                image.putpixel((x, height - y - 1), color)
-
-        filename = f"./images/rs_rt_{o_count}.png"
-        image.save(filename)
+        render_objects.append(renderer)
         if i <=5:
             cam_position = Vector(5*val, 2.5, val*5)
         camera = Camera(cam_position, cam_direction, cam_right, cam_down)
 
         o_count += 1
 
-for i in tqdm(range(5, 0, -1)):
-    sub = np.linspace(i, i-1, 60)
+
+for i in range(2, 1, -1):
+    sub = np.linspace(i, i-1, 120)
     for idx, val in enumerate(sub):
         renderer = RenderScene(scene_objects,camera,lights, width, height, ambient, accuracy)
-        img_colors = renderer.render()
-        count = 0 
-        for x in range(0, width):
-            for y in range(0, height):
-
-                color = img_colors[count]
-                count += 1
-
-                image.putpixel((x, height - y - 1), color)
-
-        filename = f"./images/rs_rt_{o_count}.png"
-        image.save(filename)
+        render_objects.append(renderer)
         if i <=5:
             cam_position = Vector(5*val, 2.5, val*5)
         camera = Camera(cam_position, cam_direction, cam_right, cam_down)
 
         o_count += 1
+
+for i in range(0, 2):
+    sub = np.linspace(i, i+1, 120)
+    for idx, val in enumerate(sub):
+        renderer = RenderScene(scene_objects,camera,lights, width, height, ambient, accuracy)
+        render_objects.append(renderer)
+
+        cam_position = Vector(5*val, 2.5, 2)
+        camera = Camera(cam_position, cam_direction, cam_right, cam_down)
+
+        o_count += 1
+
+for i in range(2, 0, -1):
+    sub = np.linspace(i, i-1, 120)
+    for idx, val in enumerate(sub):
+        renderer = RenderScene(scene_objects,camera,lights, width, height, ambient, accuracy)
+        render_objects.append(renderer)
+        cam_position = Vector(5*val, 2.5, 2)
+        camera = Camera(cam_position, cam_direction, cam_right, cam_down)
+
+        o_count += 1
+
+render_objects[0].par_render(render_objects, width, height)
