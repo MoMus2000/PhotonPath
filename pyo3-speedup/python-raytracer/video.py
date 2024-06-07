@@ -14,7 +14,7 @@ def sorter(item):
 	IntVar = int("".join(filter(str.isdigit, item)))
 	return IntVar
 
-files = sorted(glob.glob('./images/test_img*'), key=sorter)
+files = sorted(glob.glob('./images/rs*'), key=sorter)
 
 for filename in tqdm(files):
 	img = cv2.imread(filename)
