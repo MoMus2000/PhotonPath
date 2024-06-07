@@ -1,4 +1,4 @@
-# ray-tracer
+# PhotonPath
 
 Python Version - Using PyPy and firing on all cpu cores to create HD rendered video.
 
