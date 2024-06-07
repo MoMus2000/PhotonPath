@@ -10,6 +10,8 @@ Successfully ported Raytracing logic to rust with measurable reduction in render
 
 [![Watch Video](https://i.imgur.com/Ma5RuwH.jpg)](https://youtu.be/B_RVcWMuhvg)
 
+[![Rust-PyO3](https://i.imgur.com/BNXYaUE.png)](https://youtu.be/kllB_22QUcA)
+
 
 Special thanks to arocks[https://github.com/arocks/puray] for the inspiration.
 
