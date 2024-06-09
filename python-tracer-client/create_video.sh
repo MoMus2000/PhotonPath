@@ -5,7 +5,7 @@ python3 video.py
 
 echo "Deleting images"
 
-cd /Users/mmuhammad/Desktop/projects/ray-tracer/pyo3-speedup/python-raytracer/images
+cd /Users/mmuhammad/Desktop/projects/ray-tracer/python-tracer-client/images
 rm *
 
 echo "Done"
