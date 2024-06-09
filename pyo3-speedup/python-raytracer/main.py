@@ -1,5 +1,3 @@
-__author__ = 'halileohalilei'
-
 from PIL import Image
 from tqdm import tqdm
 import RayTracer

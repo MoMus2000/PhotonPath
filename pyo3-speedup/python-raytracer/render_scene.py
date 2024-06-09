@@ -1,5 +1,3 @@
-__author__ = 'halileohalilei'
-
 from PIL import Image
 import RayTracer
 from tqdm import tqdm
@@ -13,8 +11,8 @@ import copy
 start = time.time()
 print("TRACIN' DEM RAYS...")
 
-width = int(640*2)
-height = int(480*2)
+width = int(640)
+height = int(480)
 
 origin = Vector(0, 0, 0)
 unit_x = Vector(1, 0, 0)
@@ -90,8 +88,8 @@ o_count = 0
 
 render_objects = []
 
-for i in range(0, 30):
-    sub = np.linspace(i, i+1, 120)
+for i in range(0, 20):
+    sub = np.linspace(i, i+1, 60)
     for idx, val in enumerate(sub):
         renderer = RenderScene(scene_objects,camera,lights, width, height, ambient, accuracy)
         render_objects.append(renderer)
@@ -138,4 +136,4 @@ for i in range(0, 30):
 
 #         o_count += 1
 
-render_objects[0].par_render(render_objects, width, height)
+render_objects[0].par_render(render_objects, width, height, folder_path="/Users/mmuhammad/Desktop/projects/ray-tracer/pyo3-speedup/python-raytracer")

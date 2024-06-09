@@ -1,4 +1,4 @@
-use image::{ImageBuffer, Rgb};
+use image::{ImageBuffer, Rgb, DynamicImage, ImageFormat};
 
 pub struct Image{
     pub file_name: String,
@@ -23,7 +23,9 @@ impl Image{
                 img.put_pixel(x, self.height - y - 1, color); // Assuming `Rgb` constructor accepts a tuple (r, g, b)
             }
         }
-        img.save(self.file_name.clone()).unwrap();
+
+        let img_dynamic = DynamicImage::ImageRgb8(img);
+        img_dynamic.save_with_format(self.file_name.clone(), ImageFormat::Jpeg).unwrap();
     }
 }
 
@@ -47,7 +49,7 @@ mod test{
             img_vec.push((255, 180, 69));
         }
 
-        let file_path = "./output.png";
+        let file_path = "./output.jpeg";
 
         let img = Image::new(file_path.to_string(), img_vec.clone(), width, height);
 
