@@ -214,9 +214,119 @@ impl Add<f64> for &Vector {
     // Implementing the subtraction operation for references to Vector
     fn add(self, other: f64) -> Vector {
         Vector {
-            x: self.x * other,
-            y: self.y * other,
-            z: self.z * other,
+            x: self.x + other,
+            y: self.y + other,
+            z: self.z + other,
         }
     }
+}
+
+
+#[cfg(test)]
+mod test{
+    use super::*;
+
+    #[test]
+    fn test_vector_addition(){
+        let a = Vector{x:1.0, y:1.0, z:1.0};
+        let b = Vector{x:1.0, y:1.0, z:1.0};
+        let c = &a + &b;
+
+        assert_eq!(c.x, 2.0, "Expected 2.0, but got {}", c.x);
+        assert_eq!(c.y, 2.0, "Expected 2.0, but got {}", c.y);
+        assert_eq!(c.z, 2.0, "Expected 2.0, but got {}", c.z);
+    }
+
+    #[test]
+    fn test_vector_multiplication(){
+        let a = Vector{x:1.0, y:1.0, z:1.0};
+        let b = Vector{x:1.0, y:1.0, z:1.0};
+        let c = &a * &b;
+
+        assert_eq!(c.x, 1.0, "Expected 1.0, but got {}", c.x);
+        assert_eq!(c.y, 1.0, "Expected 1.0, but got {}", c.y);
+        assert_eq!(c.z, 1.0, "Expected 1.0, but got {}", c.z);
+    }
+
+    #[test]
+    fn test_vector_subtraction(){
+        let a = Vector{x:1.0, y:1.0, z:1.0};
+        let b = Vector{x:1.0, y:1.0, z:1.0};
+        let c = &a - &b;
+
+        assert_eq!(c.x, 0.0, "Expected 0.0, but got {}", c.x);
+        assert_eq!(c.y, 0.0, "Expected 0.0, but got {}", c.y);
+        assert_eq!(c.z, 0.0, "Expected 0.0, but got {}", c.z);
+    }
+
+    #[test]
+    fn test_scalar_addition(){
+        let a = Vector{x:1.0, y:1.0, z:1.0};
+        let b = &a + 10.0;
+
+        assert_eq!(b.x, 11.0, "Expected 11.0, but got {}", b.x);
+        assert_eq!(b.y, 11.0, "Expected 11.0, but got {}", b.y);
+        assert_eq!(b.z, 11.0, "Expected 11.0, but got {}", b.z);
+    }
+
+    #[test]
+    fn test_scalar_mult(){
+        let a = Vector{x:5.0, y:3.0, z:2.0};
+        let b = &a * 10.0;
+
+        assert_eq!(b.x, 50.0, "Expected 50.0, but got {}", b.x);
+        assert_eq!(b.y, 30.0, "Expected 30.0, but got {}", b.y);
+        assert_eq!(b.z, 20.0, "Expected 20.0, but got {}", b.z);
+    }
+
+    #[test]
+    fn test_negation(){
+        let a = Vector{x:-5.0, y:3.0, z:-2.0};
+        let b = a.negative();
+
+        assert_eq!(b.x, 5.0, "Expected 5.0, but got {}", b.x);
+        assert_eq!(b.y, -3.0, "Expected -3.0, but got {}", b.y);
+        assert_eq!(b.z, 2.0, "Expected 2.0, but got {}", b.z);
+    }
+
+    #[test]
+    fn test_magnitude(){
+        let a = Vector{x:-5.0, y:3.0, z:-2.0};
+        let magnitude = a.magnitude();
+
+        let expected : f64 = 38.0_f64.sqrt();
+
+        assert_eq!(expected, magnitude, "Expected {}, but got {}", expected, magnitude);
+    }
+
+    #[test]
+    fn test_normalize(){
+        let a = Vector{x:6.0, y:8.0, z:0.0};
+        let b = a.normalize();
+
+        assert_eq!(b.x, 0.6, "Expected {}, but got {}", b.x, 3/5);
+        assert_eq!(b.y, 0.8, "Expected {}, but got {}", b.y, 4/5);
+        assert_eq!(b.z, 0.0, "Expected {}, but got {}", b.z, 0.0);
+    }
+
+    #[test]
+    fn test_dot_product(){
+        let a = Vector{x:6.0, y:8.0, z:0.0};
+        let b = Vector{x:-5.0, y:3.0, z:-2.0};
+        let dot_product = a.dot_product(&b);
+
+        assert_eq!(-6_f64, dot_product, "Expected {}, but got {}", -6_f64, dot_product);
+    }
+
+    #[test]
+    fn test_cross_product(){
+        let a = Vector{x:6.0, y:8.0, z:0.0};
+        let b = Vector{x:-5.0, y:3.0, z:-2.0};
+        let c = a.cross_product(&b);
+
+        assert_eq!(-16_f64, c.x, "Expected {}, but got {}", -16_f64, c.x);
+        assert_eq!(12_f64, c.y, "Expected {}, but got {}", 12_f64, c.y);
+        assert_eq!(58_f64, c.z, "Expected {}, but got {}", 58_f64, c.z);
+    }
+
 }

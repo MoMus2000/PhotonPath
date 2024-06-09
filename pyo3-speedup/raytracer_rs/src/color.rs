@@ -119,3 +119,75 @@ impl std::ops::Mul<Color> for Color {
         }
     }
 }
+
+#[cfg(test)]
+mod test{
+    use super::*;
+
+    #[test]
+    fn test_average(){
+        let green = Color{r: 0.0, g: 255.0, b: 0.0, special: 0.0};
+        let red  = Color{r: 255.0, g: 0.0, b: 0.0, special: 0.0};
+        let average = green.average(red);
+
+        assert_eq!(127.5, average.r, "Expected {}, but got {}", 127.5, average.r);
+        assert_eq!(127.5, average.g, "Expected {}, but got {}", 127.5, average.g);
+        assert_eq!(0.0, average.b, "Expected {}, but got {}", 127.5, average.b);
+        assert_eq!(0.0, average.special, "Expected {}, but got {}", 127.5, average.special);
+    }
+
+    #[test]
+    fn test_brightness(){
+        let green = Color{r: 0.0, g: 255.0, b: 0.0, special: 0.0};
+        let brightness = green.brightness();
+        assert_eq!(255.0/3.0, brightness, "Expected {}, but got {}", 255.0/3.0, brightness);
+    }
+    
+    #[test]
+    fn test_scale(){
+        let green = Color{r: 0.0, g: 255.0, b: 0.0, special: 0.0};
+        let scaled = green.scale(0.5);
+
+        assert_eq!(0.0, scaled.r, "Expected {}, but got {}", 0.0, scaled.r);
+        assert_eq!(127.5, scaled.g, "Expected {}, but got {}", 127.5, scaled.b);
+        assert_eq!(0.0, scaled.b, "Expected {}, but got {}", 0.0, scaled.b);
+    }
+
+    #[test]
+    fn test_clip(){
+        let mut c = Color{r: 69.0, g: 255.0, b: 55.0, special: 11.0};
+        let clipped = c.clip();
+
+        assert_eq!(1.0, clipped.r, "Expected {}, but got {}", 1.0, clipped.r);
+        assert_eq!(1.0, clipped.g, "Expected {}, but got {}", 1.0, clipped.g);
+        assert_eq!(1.0, clipped.b, "Expected {}, but got {}", 1.0, clipped.b);
+        assert_eq!(11.0, clipped.special, "Expected {}, but got {}", 11.0, clipped.special);
+    }
+
+    #[test]
+    fn add_color(){
+        let green = Color{r: 0.0, g: 255.0, b: 0.0, special: 0.0};
+        let c = Color{r: 69.0, g: 255.0, b: 55.0, special: 11.0};
+
+        let add = green + c;
+
+        assert_eq!(69.0, add.r, "Expected {}, but got {}", 69.0, add.r);
+        assert_eq!(510.0, add.g, "Expected {}, but got {}", 510.0, add.g);
+        assert_eq!(55.0, add.b, "Expected {}, but got {}", 55.0, add.b);
+    }
+
+    #[test]
+    fn multiply_color(){
+        let green = Color{r: 0.0, g: 255.0, b: 0.0, special: 0.0};
+        let c = Color{r: 69.0, g: 255.0, b: 55.0, special: 11.0};
+
+        let mult = green * c;
+
+        assert_eq!(0.0, mult.r, "Expected {}, but got {}", 0.0, mult.r);
+        assert_eq!(65025.0, mult.g, "Expected {}, but got {}", 65025.0, mult.g);
+        assert_eq!(0.0, mult.b, "Expected {}, but got {}", 0.0, mult.b);
+    }
+
+}
+    
+    

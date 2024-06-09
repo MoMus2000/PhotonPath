@@ -19,7 +19,7 @@ pub struct Camera{
 impl Camera{
     #[new]
     pub fn new(position: Option<Vector>, direction: Option<Vector>,
-         right: Option<Vector>, down: Option<Vector>) -> Self{
+        right: Option<Vector>, down: Option<Vector>) -> Self{
         let mut cam = Camera{
             position: Vector{
                 x: 0.0, y:0.0, z:0.0

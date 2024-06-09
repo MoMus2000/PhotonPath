@@ -160,7 +160,7 @@ impl RenderScene{
 
     #[staticmethod]
     // Do polling, generator pattern
-    pub fn par_render(render_scenes: Vec<RenderScene>, width: i32, height: i32) {
+    pub fn par_render(render_scenes: Vec<RenderScene>, width: i32, height: i32, folder_path: &str) {
         let pb = ProgressBar::new(render_scenes.len() as u64);
         pb.set_style(ProgressStyle::default_bar()
         .template("[{elapsed_precise}] {wide_bar} {percent}%").unwrap()
@@ -168,11 +168,12 @@ impl RenderScene{
 
         (0 .. render_scenes.len()).into_par_iter().for_each(|i|{
             let img_vec = render_scenes[i].render();
-            let file_name = format!("/Users/mmuhammad/Desktop/projects/ray-tracer/pyo3-speedup/python-raytracer/images/rs_{}.png",i);
+            let file_name = format!("{}/images/rs_{}.png",folder_path, i);
             let img = Image::new(file_name, img_vec, width as u32, height as u32);
             img.convert_to_image();
             pb.inc(1);
         });
+
     }
 }
     
