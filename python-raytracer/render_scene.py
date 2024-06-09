@@ -136,4 +136,4 @@ for i in range(0, 20):
 
 #         o_count += 1
 
-render_objects[0].par_render(render_objects, width, height, folder_path="/Users/mmuhammad/Desktop/projects/ray-tracer/pyo3-speedup/python-raytracer")
+render_objects[0].par_render(render_objects, width, height, folder_path="/Users/mmuhammad/Desktop/projects/ray-tracer/python-raytracer")
