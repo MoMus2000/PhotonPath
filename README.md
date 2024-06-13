@@ -16,6 +16,6 @@ Successfully ported Raytracing logic to rust with measurable reduction in render
 
 ## PyO3 - Rust Bindings
 
-[![Rust-PyO3](https://i.imgur.com/BNXYaUE.png)](https://youtu.be/kllB_22QUcA)
+[![Rust-PyO3](https://i.imgur.com/BNXYaUE.png)](https://www.youtube.com/watch?v=JTpOUD_-8Ns)
 
 

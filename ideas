@@ -1,3 +1,4 @@
+1. Add function to render a single Pic
 2. Compress generated images - loss less
 3. compare performance with pypy3
 4. create flamegraphs to see what the performance bottlenecks are
