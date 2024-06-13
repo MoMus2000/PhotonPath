@@ -8,3 +8,4 @@
 9. Ability to define format, and fps
 10. Create GIF if its straightforward
 11. Create a video using ffmpeg bindings in rust
+12. Use options and result in your code, learn the ? operator
