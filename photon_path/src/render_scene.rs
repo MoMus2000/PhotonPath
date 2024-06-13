@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use std::path::Path;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use crate::scene::Scene;
 use crate::camera::Camera;
@@ -279,6 +280,10 @@ impl RenderScene{
     // Do polling, generator pattern
     pub fn par_render(render_scenes: Vec<RenderScene>, width: i32, height: i32, folder_path: &str) {
 
+        if !is_valid_path(folder_path){
+            panic!("Invalid folder path");
+        }
+
         let pb = ProgressBar::new(render_scenes.len() as u64);
         pb.set_style(ProgressStyle::default_bar()
         .template("[{elapsed_precise}] {wide_bar} {percent}%").unwrap()
@@ -295,12 +300,21 @@ impl RenderScene{
     }
 
     #[staticmethod]
-    pub fn par_render_image(render_scene: RenderScene, width: i32, height: i32, folder_path: &str){
+    pub fn par_render_image(render_scene: RenderScene, width: i32, height: i32, file_name: &str){
         let img_vec = render_scene.singular_par_render();
-        let file_name = format!("{}/images/rs_img.jpeg",folder_path);
-        let img = Image::new(file_name, img_vec, width as u32, height as u32);
-        img.convert_to_image();
+        if is_valid_path(file_name){
+            let img = Image::new(file_name.to_string(), img_vec, width as u32, height as u32);
+            img.convert_to_image();
+        }
     }
-
 }
-    
+
+fn is_valid_path(path_str: &str) -> bool {
+    let path = Path::new(path_str);
+    let parent = path.parent(); // Get the parent directory
+    if let Some(parent_dir) = parent {
+        parent_dir.exists() && parent_dir.is_dir()
+    } else {
+        false  // No parent directory found
+    }
+}

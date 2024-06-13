@@ -73,15 +73,6 @@ scene_objects = [
     Scene(None, plane, None),
 ]
 
-# start 3, 0, -3
-# for i in range(2, 20):
-    #sphere_t = Sphere(Vector(3, 0, -3), 1, green)
-    # x, z = 3*i, -3*i
-    # sphere = Scene(None, None, Sphere(Vector(x, 0, -z), 1, green))
-    # scene_objects.append(sphere)
-
-image = Image.new("RGB", (width, height))
-
 o_count = 0
 
 render_objects = []
@@ -104,37 +95,4 @@ for i in range(0, 20):
         light = Light(Vector(i, i, i), white_light)
         lights.append(light)
 
-
-
-# for i in range(20, 1, -1):
-#     sub = np.linspace(i, i-1, 120)
-#     for idx, val in enumerate(sub):
-#         renderer = RenderScene(scene_objects,camera,lights, width, height, ambient, accuracy)
-#         render_objects.append(renderer)
-#         cam_position = Vector(5*val, 2.5*val, val*5)
-#         camera = Camera(cam_position, cam_direction, cam_right, cam_down)
-
-#         o_count += 1
-
-# for i in range(0, 2):
-#     sub = np.linspace(i, i+1, 120)
-#     for idx, val in enumerate(sub):
-#         renderer = RenderScene(scene_objects,camera,lights, width, height, ambient, accuracy)
-#         render_objects.append(renderer)
-
-#         cam_position = Vector(5*val, 2.5, 2)
-#         camera = Camera(cam_position, cam_direction, cam_right, cam_down)
-
-#         o_count += 1
-
-# for i in range(2, 0, -1):
-#     sub = np.linspace(i, i-1, 120)
-#     for idx, val in enumerate(sub):
-#         renderer = RenderScene(scene_objects,camera,lights, width, height, ambient, accuracy)
-#         render_objects.append(renderer)
-#         cam_position = Vector(5*val, 2.5, 2)
-#         camera = Camera(cam_position, cam_direction, cam_right, cam_down)
-
-#         o_count += 1
-
-render_objects[0].par_render(render_objects, width, height, folder_path="/Users/mmuhammad/Desktop/projects/ray-tracer/python_client")
+RenderScene.par_render(render_objects, width, height, folder_path="/Users/mmuhammad/Desktop/projects/ray-tracer/python_client")

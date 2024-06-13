@@ -7,3 +7,5 @@
 7. Convert into a python library and publish to pypi
 8. Create compressed photo's with rust
 9. Ability to define format, and fps
+10. Create GIF if its straightforward
+11. Create a video using ffmpeg bindings in rust
