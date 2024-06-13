@@ -11,8 +11,8 @@ start = time.time()
 print("TRACIN' DEM RAYS...")
 
 
-width = int(640*2)
-height = int(480*2)
+width = int(2560)
+height = int(1440)
 
 origin = Vector(0, 0, 0)
 unit_x = Vector(1, 0, 0)

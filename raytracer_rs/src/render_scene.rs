@@ -278,6 +278,7 @@ impl RenderScene{
     #[staticmethod]
     // Do polling, generator pattern
     pub fn par_render(render_scenes: Vec<RenderScene>, width: i32, height: i32, folder_path: &str) {
+
         let pb = ProgressBar::new(render_scenes.len() as u64);
         pb.set_style(ProgressStyle::default_bar()
         .template("[{elapsed_precise}] {wide_bar} {percent}%").unwrap()

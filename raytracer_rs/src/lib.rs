@@ -27,5 +27,14 @@ fn raytracer_rs(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<sphere::Sphere>()?;
     m.add_class::<camera::Camera>()?;
     m.add_class::<render_scene::RenderScene>()?;
+
+    let image_sub_module = rt_image::add_image_submodule(_py);
+    m.add_submodule(image_sub_module)?;
+
+    // Set to call like from raytracer_rs.image import VLR, and so on ...
+    _py.import("sys")?
+        .getattr("modules")?
+        .set_item("raytracer_rs.image", image_sub_module)?;
+
     Ok(())
 }

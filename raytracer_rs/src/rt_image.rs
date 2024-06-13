@@ -1,4 +1,28 @@
+use pyo3::prelude::*;
 use image::{ImageBuffer, Rgb, DynamicImage, ImageFormat};
+
+
+pub const VLR: (i32, i32) = (240, 144);
+pub const LR: (i32, i32) = (480, 270);
+pub const NHD: (i32, i32) = (640, 360);
+pub const SD: (i32, i32) = (640, 480);
+pub const HD: (i32, i32) = (1280, 720);
+pub const FHD: (i32, i32) = (1920, 1080);
+pub const QHD: (i32, i32) = (2560, 1440);
+pub const UHD: (i32, i32) = (3840, 2160);
+
+pub fn add_image_submodule(py: Python) -> &PyModule{
+    let submodule = PyModule::new(py, "Image").expect("Expected to create image submodule");
+    submodule.add("VLR", VLR).expect("Expected to add constant");
+    submodule.add("LR", LR).expect("Expected to add constant");
+    submodule.add("NDH", NHD).expect("Expected to add constant");
+    submodule.add("SD", SD).expect("Expected to add constant");
+    submodule.add("HD", HD).expect("Expected to add constant");
+    submodule.add("FHD", FHD).expect("Expected to add constant");
+    submodule.add("QHD", QHD).expect("Expected to add constant");
+    submodule.add("UHD", UHD).expect("Expected to add constant");
+    submodule
+}
 
 pub struct Image{
     pub file_name: String,

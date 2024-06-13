@@ -9,6 +9,7 @@ name = "raytracer_rs"
 crate-type = ["cdylib"]
 
 [dependencies]
+ctrlc = "3.4.4"
 image = "0.25.1"
 indicatif = "0.17.8"
 pyo3 = {version = "0.20.0", features = ["extension-module"]}

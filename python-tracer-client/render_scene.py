@@ -11,8 +11,8 @@ import copy
 start = time.time()
 print("TRACIN' DEM RAYS...")
 
-width = int(640)
-height = int(480)
+width = int(2560)
+height = int(1440)
 
 origin = Vector(0, 0, 0)
 unit_x = Vector(1, 0, 0)
@@ -59,7 +59,7 @@ sphere = Sphere(origin, 1, green)
 sphere_t = Sphere(Vector(0, 0, -0), 1, green)
 sphere2 = Sphere(sphere_center, 0.5, maroon)
 sphere3 = Sphere(Vector(0, 2, 0), 1, blue)
-plane = Plane(unit_y, -1, tile_floor)
+plane = Plane(unit_y, -1, reflective_black)
 
 triangle = Triangle(Vector(3, 4, -3), Vector(3, -1, -3),Vector(-3, -1, -3), orange)
 triangle2 = Triangle(Vector(3, 4, -3), Vector(-3, -1, -3), Vector(-3, 4, -3), orange)
@@ -89,7 +89,7 @@ o_count = 0
 render_objects = []
 
 for i in range(0, 20):
-    sub = np.linspace(i, i+1, 60)
+    sub = np.linspace(i, i+1, 120)
     for idx, val in enumerate(sub):
         renderer = RenderScene(scene_objects,camera,lights, width, height, ambient, accuracy)
         render_objects.append(renderer)
@@ -101,8 +101,11 @@ for i in range(0, 20):
 
         o_count += 1
 
-    light = Light(Vector(val, val, val), yellow_light)
-    lights.append(light)
+
+    if i % 6 == 0:
+        light = Light(Vector(i, i, i), white_light)
+        lights.append(light)
+
 
 
 # for i in range(20, 1, -1):
